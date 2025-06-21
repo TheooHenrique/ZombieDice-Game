@@ -1,31 +1,31 @@
 #include "player.hpp"
 
-Player::Player(const std::string& name) : name(name), brains(0), shotguns(0), footprints(0) {}
+Player::Player(const std::string& name) : name(name), m_brain_round(0), m_run_round(0), m_shots_round(0) {}
 
 const std::string& Player::getName() const {
     return name;
 }
 
 int Player::getBrains() const {
-    return brains;
+    return m_brain_round;
 }
 
 void Player::addBrain() {
-    brains++;
+    m_brain_round++;
 }
 
 void Player::addShotgun() {
-    shotguns++;
+    m_shots_round++;
 }
 
 void Player::addFootprint() {
-    footprints++;
+    m_run_round++;
 }
 
 int Player::getShotguns() const {
-    return shotguns;
+    return m_shots_round;
 }
 
 int Player::getFootprints() const {
-    return footprints;
+    return m_run_round;
 }

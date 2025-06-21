@@ -7,6 +7,7 @@ class GameController{
     private:
     //INSERIR CONSTRUTOR COMO PRIVADO. (TEMPLATE SINGLETON)
 
+
     //ATTRIBUTES:
     //Note that this values are the default values. They can be overriden by the initializer.
     uint8_t m_current_state = START;
@@ -14,8 +15,8 @@ class GameController{
     size_type m_current_round;
     size_type m_max_players = 3;
     size_type m_max_turn = 0;
-    std::vector<std::string> m_player_list = {"theo", "haniel"}; //ESTE NÃO PODE TER UM DEFAULT. DEVE SER DEFINIDO PELO USUÁRIO NA ENTRADA DO PROGRAMA.
-    std::vector<std::string> m_possib_winner;
+    std::vector<Player> m_player_list;
+    std::vector<Player> m_possib_winner;
     DiceBag m_dice_bag;
     Player m_current_player;
 
@@ -40,6 +41,14 @@ class GameController{
 
     //METHODS:
     public:
+
+    GameController(){
+    uint8_t m_current_state = START;
+    size_type m_brains_to_win = 13;
+    size_type m_max_players = 3;
+    size_type m_max_turn = 0;
+}
+
     void parse_config();
     void process_events(){
         if (m_current_state == START){
@@ -135,7 +144,10 @@ class GameController{
     void untie();
     bool has_tie();
     bool config_ok();
-    static void getInstance(); //MÉTODO PARA CHAMAR O CONSTRUTOR (SEMPRE DEVE DEVOLVER O MESMO OBJETO CONSTRUÍDO)
+    //MÉTODO PARA CHAMAR O CONSTRUTOR (SEMPRE DEVE DEVOLVER O MESMO OBJETO CONSTRUÍDO)
+    static GameController* getInstance(){ //-----------------------------------------> DEPOIS TEM QUE CONSERTAR O ACESSO A ISSO NA MAIN.CPP.
+        return new GameController();
+    } 
 
 
 };  

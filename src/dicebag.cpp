@@ -2,16 +2,21 @@
 #include <algorithm>
 #include <random>
 #include <iostream>
+using size_type = size_t;
 
-ZDice_Bag::ZDice_Bag(int green, int yellow, int red, const std::string& weak_faces, const std::string& strong_faces, const std::string& tough_faces) : weak_faces(weak_faces), strong_faces(strong_faces), tough_faces(tough_faces) {
+DiceBag::DiceBag(size_type green, size_type yellow, size_type red, size_type total){
+    m_green_amount = green;
+    m_yellow_amount = yellow;
+    m_red_amount = red;
+    m_total_dices = total;
     for (int i = 0; i < green; ++i) available_dice.push_back("weak");
     for (int i = 0; i < yellow; ++i) available_dice.push_back("strong");
     for (int i = 0; i < red; ++i) available_dice.push_back("tough");
 }
 
-std::string ZDice_Bag::sort_dices(int num_dice) {
+std::string DiceBag::sort_dices(int num_dice) {
     if (available_dice.size() < num_dice) {
-        refill();
+        refill_bag();
     }
 
     std::random_shuffle(available_dice.begin(), available_dice.end());
@@ -26,11 +31,11 @@ std::string ZDice_Bag::sort_dices(int num_dice) {
     return result;
 }
 
-void ZDice_Bag::refill() {
+size_type DiceBag::refill_bag() {
     available_dice.insert(available_dice.end(), used_dice.begin(), used_dice.end()); //inserts at the end of available_dice all the elements of the range that goes from the beginning to the end of the used_dice vector.
     used_dice.clear();
 }
 
-int ZDice_Bag::verifyNumberDices() {
-    return available_dice.size();
+size_type DiceBag::lower_than_3_dices() {
+    return available_dice.size(); //Acho que essa função seria melhor encaixada como retornando um bool (true se n<3 e false otherwise), ne haniboy?
 }
