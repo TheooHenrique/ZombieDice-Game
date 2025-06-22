@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <iostream>
 #include <vector>
 #include "dicebag.hpp"
 #include "player.hpp"
@@ -41,7 +42,7 @@ class GameController{
 };
 
     //METHODS:
-    public:
+    
 
     GameController(){
     uint8_t m_current_state = START;
@@ -49,13 +50,21 @@ class GameController{
     size_type m_max_players = 3;
     size_type m_max_turn = 0;
 }
+    public:
 
     void parse_config();
     void process_events(){
         if (m_current_state == START){
-            //Reader reader;
-            //read
-            //INSIRA AQUI O QUE VAI ACONTECER QUANDO O ESTADO ESTIVER EM START
+            Reader reader("zdice.ini");
+            ///quando haniel terminar de ler os arquivos de "zdice.ini" e armazenar nas hash tables,
+            // eu defino aqui o que tá lá como padrão.
+        }
+        if (m_current_state == INVALID_CFG){
+            //Isso deve estar no render() (?)
+            std::cout << "Erro! Alguma configuração que você inseriu no arquivo \"zdice.ini\" está errada! \n Se atente a ler as instruções de maneira correta.\n";
+        }
+        if (m_current_state == INPUT_PLAYERS){
+            
         }
     };
 
@@ -147,9 +156,10 @@ class GameController{
     void untie();
     bool has_tie();
     bool config_ok();
-    //MÉTODO PARA CHAMAR O CONSTRUTOR (SEMPRE DEVE DEVOLVER O MESMO OBJETO CONSTRUÍDO)
-    static GameController* getInstance(){ //-----------------------------------------> DEPOIS TEM QUE CONSERTAR O ACESSO A ISSO NA MAIN.CPP.
-        return new GameController();
+
+    static GameController& getInstance(){ //Call the unique object of the class
+        static GameController gc;
+        return gc;
     } 
 
 

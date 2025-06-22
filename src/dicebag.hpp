@@ -13,11 +13,11 @@ public:
   //Default constructor of the class
   DiceBag();
   //Constructor receiving the amount of each dice from initializer
-  DiceBag(size_type green_amount, size_type yellow_amount, size_type red_amount);
+  DiceBag(size_type green_amount, size_type yellow_amount, size_type red_amount, std::string green_faces, std::string yellow_faces, std::string red_faces);
 
   //METHODS:
   std::string sort_dices(int num_dice = 3);
-  size_type lower_than_3_dices();
+  bool lower_than_3_dices();
   void refill_bag();
 
 
