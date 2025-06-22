@@ -2,6 +2,7 @@
 #include <vector>
 #include "dicebag.hpp"
 #include "player.hpp"
+#include "reader.hpp"
 class GameController{
     using size_type = std::size_t;
     private:
@@ -52,7 +53,9 @@ class GameController{
     void parse_config();
     void process_events(){
         if (m_current_state == START){
-            //INSIRA AQUI O QUE VAI SER MOSTRADO QUANDO O ESTADO ESTIVER EM START
+            //Reader reader;
+            //read
+            //INSIRA AQUI O QUE VAI ACONTECER QUANDO O ESTADO ESTIVER EM START
         }
     };
 
@@ -98,12 +101,12 @@ class GameController{
         if (m_current_state == CHECK_DICES){
             //Função para checar se tem 3 run ou 3 shotgun
             //Função para checar se o player chegou na quantidade maxima de cerebros
-            if (m_current_player.m_total_brains >= m_brains_to_win){ 
+            if (m_current_player.get_total_brains() >= m_brains_to_win){ 
                 //Função que passa o player pra uma lista de possíveis vencedores
             }
-            if (m_dice_bag.m_current_count_dices <= 3){ m_current_state = RESTORE_DICES;}
-            if (m_current_player.m_run_round >= 3){ m_current_state = SKIP;}
-            else if (m_current_player.m_shots_round >= 3) {m_current_state = REMOVE_BRAINS;}
+            if (m_dice_bag.get_current_count() <= 3){ m_current_state = RESTORE_DICES;}
+            if (m_current_player.getFootprints() >= 3){ m_current_state = SKIP;}
+            else if (m_current_player.getShotguns() >= 3) {m_current_state = REMOVE_BRAINS;}
         }
         if (m_current_state == RESTORE_DICES){
             //Função para dar restore nos dados.
