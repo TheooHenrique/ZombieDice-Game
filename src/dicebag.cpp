@@ -10,6 +10,12 @@ using size_type = size_t;
     size_type m_yellow_amount = 4;
     size_type m_red_amount = 3;
     size_type m_total_dices = 13;
+    ZDice green_dice(true, false, false, "bbbffs");
+    ZDice yellow_dice(false, true, false, "bbffss");
+    ZDice red_dice(false, false, true, "bffsss");
+    for (int i = 0; i < m_green_amount; ++i) available_dice.push_back(green_dice);
+    for (int i = 0; i < m_yellow_amount; ++i) available_dice.push_back(yellow_dice);
+    for (int i = 0; i < m_red_amount; ++i) available_dice.push_back(red_dice);
   }
 
 //Constructor Receiving data from initializer
@@ -17,9 +23,9 @@ DiceBag::DiceBag(size_type green_amount, size_type yellow_amount, size_type red_
     m_green_amount = green_amount;
     m_yellow_amount = yellow_amount;
     m_red_amount = red_amount;
-    ZDice green_dice(true, false, false, green_faces, yellow_faces, red_faces);
-    ZDice yellow_dice(false, true, false, green_faces, yellow_faces, red_faces);
-    ZDice red_dice(false, false, true, green_faces, yellow_faces, red_faces);
+    ZDice green_dice(true, false, false, green_faces);
+    ZDice yellow_dice(false, true, false, yellow_faces);
+    ZDice red_dice(false, false, true, red_faces);
     for (int i = 0; i < green_amount; ++i) available_dice.push_back(green_dice);
     for (int i = 0; i < yellow_amount; ++i) available_dice.push_back(yellow_dice);
     for (int i = 0; i < red_amount; ++i) available_dice.push_back(red_dice);

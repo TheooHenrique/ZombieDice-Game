@@ -4,15 +4,13 @@
 #include <string>
 using size_type = size_t;
 
-ZDice::ZDice(bool green, bool yellow, bool red, std::string green_faces, std::string yellow_faces, std::string red_faces) { 
+ZDice::ZDice(bool green, bool yellow, bool red, std::string all_faces) { 
     ///initializes the member variable faces (the one on the left) with the value of the parameter faces (the one on the right).
     // When you create a ZDice object dice("ABC");, the internal variable dice.faces receives the value "ABC".
     m_green = green;
     m_yellow = yellow;
     m_red = red;
-    if (m_green){faces = green_faces;} 
-    else if ( m_yellow ){ faces = yellow_faces; }
-    else if ( m_red ){ faces = red_faces; }
+    faces = all_faces;
     std::random_device rd;
     gen = std::mt19937(rd());
 }
