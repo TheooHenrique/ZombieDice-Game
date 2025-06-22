@@ -1,11 +1,14 @@
 #include <cstdint>
+#include <iostream>
 #include <vector>
 #include "dicebag.hpp"
 #include "player.hpp"
+#include "reader.hpp"
 class GameController{
     using size_type = std::size_t;
     private:
     //INSERIR CONSTRUTOR COMO PRIVADO. (TEMPLATE SINGLETON)
+
 
     //ATTRIBUTES:
     //Note that this values are the default values. They can be overriden by the initializer.
@@ -14,8 +17,8 @@ class GameController{
     size_type m_current_round;
     size_type m_max_players = 3;
     size_type m_max_turn = 0;
-    std::vector<std::string> m_player_list = {"theo", "haniel"}; //ESTE NÃO PODE TER UM DEFAULT. DEVE SER DEFINIDO PELO USUÁRIO NA ENTRADA DO PROGRAMA.
-    std::vector<std::string> m_possib_winner;
+    std::vector<Player> m_player_list;
+    std::vector<Player> m_possib_winner;
     DiceBag m_dice_bag;
     Player m_current_player;
 
@@ -39,11 +42,29 @@ class GameController{
 };
 
     //METHODS:
+    
+
+    GameController(){
+    uint8_t m_current_state = START;
+    size_type m_brains_to_win = 13;
+    size_type m_max_players = 3;
+    size_type m_max_turn = 0;
+}
     public:
+
     void parse_config();
     void process_events(){
         if (m_current_state == START){
-            //INSIRA AQUI O QUE VAI SER MOSTRADO QUANDO O ESTADO ESTIVER EM START
+            Reader reader("zdice.ini");
+            ///quando haniel terminar de ler os arquivos de "zdice.ini" e armazenar nas hash tables,
+            // eu defino aqui o que tá lá como padrão.
+        }
+        if (m_current_state == INVALID_CFG){
+            //Isso deve estar no render() (?)
+            std::cout << "Erro! Alguma configuração que você inseriu no arquivo \"zdice.ini\" está errada! \n Se atente a ler as instruções de maneira correta.\n";
+        }
+        if (m_current_state == INPUT_PLAYERS){
+            
         }
     };
 
@@ -89,12 +110,12 @@ class GameController{
         if (m_current_state == CHECK_DICES){
             //Função para checar se tem 3 run ou 3 shotgun
             //Função para checar se o player chegou na quantidade maxima de cerebros
-            if (m_current_player.m_total_brains >= m_brains_to_win){ 
+            if (m_current_player.get_total_brains() >= m_brains_to_win){ 
                 //Função que passa o player pra uma lista de possíveis vencedores
             }
-            if (m_dice_bag.m_current_count_dices <= 3){ m_current_state = RESTORE_DICES;}
-            if (m_current_player.m_run_round >= 3){ m_current_state = SKIP;}
-            else if (m_current_player.m_shots_round >= 3) {m_current_state = REMOVE_BRAINS;}
+            if (m_dice_bag.get_current_count() <= 3){ m_current_state = RESTORE_DICES;}
+            if (m_current_player.getFootprints() >= 3){ m_current_state = SKIP;}
+            else if (m_current_player.getShotguns() >= 3) {m_current_state = REMOVE_BRAINS;}
         }
         if (m_current_state == RESTORE_DICES){
             //Função para dar restore nos dados.
@@ -135,7 +156,11 @@ class GameController{
     void untie();
     bool has_tie();
     bool config_ok();
-    static void getInstance(); //MÉTODO PARA CHAMAR O CONSTRUTOR (SEMPRE DEVE DEVOLVER O MESMO OBJETO CONSTRUÍDO)
+
+    static GameController& getInstance(){ //Call the unique object of the class
+        static GameController gc;
+        return gc;
+    } 
 
 
 };  

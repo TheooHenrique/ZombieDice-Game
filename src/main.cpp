@@ -30,9 +30,19 @@
  */
 
 #include "game_controller.hpp"
+#include <filesystem>
+using size_type = size_t;
 
 int main(int argc, char* argv[]) {
-  GameController gc;
+  //Calling a GameController object by singleton pattern
+  GameController &gc = GameController::getInstance();
+
+  for (size_type i{1}; i < argc ; ++i){ //---------------------------------------> TO TRABALHANDO AQUI AGORA, POR ISSO QUE TA DANDO ERRO
+    if(argv[i].substr(argv[i].find_last_of(".") + 1) == "ini")
+
+  }
+
+
   //gc.parse_config(argc, argv);
   // The Game Loop (Architecture)
   while (not gc.game_over()) {
