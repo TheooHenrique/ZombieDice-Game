@@ -37,10 +37,15 @@ int main(int argc, char* argv[]) {
   //Calling a GameController object by singleton pattern
   GameController &gc = GameController::getInstance();
 
-  for (size_type i{1}; i < argc ; ++i){ //---------------------------------------> TO TRABALHANDO AQUI AGORA, POR ISSO QUE TA DANDO ERRO
-    if(argv[i].substr(argv[i].find_last_of(".") + 1) == "ini")
-
+  size_type ct = 0;
+  for (size_type i{1}; i < argc ; ++i){ 
+    std::string extension = std::filesystem::path(argv[i]).extension().string();
+    if (extension == ".ini"){
+      gc.set_initializer(argv[i]);
+      ++ct;
+    }
   }
+  gc.set_initializer_amount(ct);
 
 
   //gc.parse_config(argc, argv);
