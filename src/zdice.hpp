@@ -7,7 +7,7 @@ class ZDice{
     using size_type = size_t;
     public:
     ///Constructor
-    ZDice(bool green, bool yellow, bool red, std::string green_faces, std::string yellow_faces, std::string red_faces);
+    ZDice(bool green, bool yellow, bool red, std::string faces);
 
     //METHODS
     std::string roll();
@@ -15,6 +15,9 @@ class ZDice{
     ///GET METHODS
     const std::string get_faces(){ return faces; }
     const std::string get_result(){ return roll_result; }
+
+    ///SET METHODS:
+    void set_faces(std::string f){ faces = f; }
 
     private:
     //ATTRIBUTES

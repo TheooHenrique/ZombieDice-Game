@@ -47,7 +47,6 @@ int main(int argc, char* argv[]) {
   }
   gc.set_initializer_amount(ct);
 
-
   //gc.parse_config(argc, argv);
   // The Game Loop (Architecture)
   while (not gc.game_over()) {

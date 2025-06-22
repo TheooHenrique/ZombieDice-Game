@@ -30,6 +30,9 @@ public:
   std::vector<ZDice>& get_available_dice() {return available_dice; }
   std::vector<ZDice>& get_used_dice() {return used_dice; }
 
+  //SET METHODS 
+  void set_available_dice(ZDice value){ available_dice.push_back(value); }
+
 private:
     size_type m_green_amount;
     size_type m_yellow_amount;

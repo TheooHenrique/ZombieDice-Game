@@ -25,6 +25,9 @@ public:
     size_type getShotguns() const;
     size_type getFootprints() const;
     size_type get_total_brains() const;
+
+  //SET METHODS
+  void set_name(std::string str){ name = str; };
   
 private:
   //ATTRIBUTES

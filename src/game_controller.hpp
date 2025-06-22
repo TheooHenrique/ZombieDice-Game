@@ -1,5 +1,7 @@
 #include <cstdint>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <vector>
 #include "dicebag.hpp"
 #include "player.hpp"
@@ -28,6 +30,7 @@ class GameController{
     Player m_current_player;
     std::string initializer_name;
     size_type initializer_amount;
+    std::string error_msg;
 
 
     enum m_possible_states : uint8_t{
@@ -54,27 +57,59 @@ class GameController{
     void parse_config();
     void process_events(){
         if (m_current_state == START){
-            if (initializer_amount == 0){
-                //Call Reader's default constructor
-            }
-            else if(initializer_amount == 1){
-                //Call Reader's constructor with initializer_name parameter
+            if(initializer_amount == 1){
+                //Call Reader's constructor
                 Reader reader(initializer_name);
-            } else{
-                
-            }
-            
-            ///quando haniel terminar de ler os arquivos de "zdice.ini" e armazenar nas hash tables,
-            // eu defino aqui o que tá lá como padrão.
+                //Override gc attributes with initializer config
+
+                //Tá faltando verificar "Game.at("brains_to_win")" exite.
+                if (!reader.getSection("Game").at("brains_to_win").empty()){
+                    m_brains_to_win = std::stoi(reader.getSection("Game").at("brains_to_win")); }
+                if (!reader.getSection("Game").at("max_turns").empty()){
+                    m_max_turn = std::stoi(reader.getSection("Game").at("max_turns")); }
+                if (!reader.getSection("Game").at("max_player").empty()){
+                    m_max_players = std::stoi(reader.getSection("Game").at("max_players")); }
+                if (!reader.getSection("Game").at("weak_dice").empty()){
+                    m_max_players = std::stoi(reader.getSection("Game").at("weak_dice")); }
+                if (!reader.getSection("Game").at("tough_dice").empty()){
+                    m_max_players = std::stoi(reader.getSection("Game").at("tough_dice")); }
+                if (!reader.getSection("Game").at("strong_dice").empty()){
+                    m_max_players = std::stoi(reader.getSection("Game").at("strong_dice")); }
+
+                if (!reader.getSection("Dice").at("weak_dice_faces").empty()){
+                    for (size_type i{0}; i < m_dice_bag.get_available_dice().size() ; ++i)
+                    m_dice_bag.get_available_dice()[i].set_faces(reader.getSection("Game").at("weak_dice"));
+                }
+                if (!reader.getSection("Dice").at("tough_dice_faces").empty()){
+                    for (size_type i{0}; i < m_dice_bag.get_available_dice().size() ; ++i)
+                    m_dice_bag.get_available_dice()[i].set_faces(reader.getSection("Game").at("tough_dice"));
+                }
+                if (!reader.getSection("Dice").at("strong_dice_faces").empty()){
+                    for (size_type i{0}; i < m_dice_bag.get_available_dice().size() ; ++i)
+                    m_dice_bag.get_available_dice()[i].set_faces(reader.getSection("Game").at("strong_dice"));
+                }
+
+            } 
+            //Colocar isso no render depois:
+            else if (initializer_amount > 1){ error_msg = "Não é possível iniciar o programa com dois arquivos inicializadores! Digite somente um!"; }
+
         }
         if (m_current_state == INVALID_CFG){
-            //Isso deve estar no render() (?)
-            std::cout << "Erro! Alguma configuração que você inseriu no arquivo \"zdice.ini\" está errada! \n Se atente a ler as instruções de maneira correta.\n";
+            //Colocar isso no render depois:
+            error_msg = "Erro! Alguma configuração que você inseriu no arquivo \"zdice.ini\" está errada! \n Se atente a ler as instruções de maneira correta.\n";
         }
         if (m_current_state == INPUT_PLAYERS){
-            
+            std::string players_string;
+            std::getline(std::cin, players_string);
+            std::stringstream ss(players_string);
+
+            while(std::getline(ss, players_string, ',')) {
+            Player player = *new Player();
+            player.set_name(players_string);
+            m_player_list.push_back(player);
         }
-    };
+    }
+};
 
 
     void update(){ //O que tiver de comentário aqui, a maioria são para funções que DEVEM SER ADICIONADAS NO "PROCESS_EVENTS". "Update" é só para receber os gatilhos e
