@@ -54,7 +54,16 @@ class GameController{
     void parse_config();
     void process_events(){
         if (m_current_state == START){
-            Reader reader("zdice.ini");
+            if (initializer_amount == 0){
+                //Call Reader's default constructor
+            }
+            else if(initializer_amount == 1){
+                //Call Reader's constructor with initializer_name parameter
+                Reader reader(initializer_name);
+            } else{
+                
+            }
+            
             ///quando haniel terminar de ler os arquivos de "zdice.ini" e armazenar nas hash tables,
             // eu defino aqui o que tá lá como padrão.
         }
