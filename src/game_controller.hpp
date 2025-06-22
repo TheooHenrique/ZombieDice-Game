@@ -7,20 +7,27 @@
 class GameController{
     using size_type = std::size_t;
     private:
-    //INSERIR CONSTRUTOR COMO PRIVADO. (TEMPLATE SINGLETON)
 
-
-    //ATTRIBUTES:
-    //Note that this values are the default values. They can be overriden by the initializer.
+    //Default constructor
+    GameController(){
     uint8_t m_current_state = START;
     size_type m_brains_to_win = 13;
-    size_type m_current_round;
     size_type m_max_players = 3;
     size_type m_max_turn = 0;
+}
+
+    //ATTRIBUTES:
+    uint8_t m_current_state;
+    size_type m_brains_to_win;
+    size_type m_current_round;
+    size_type m_max_players;
+    size_type m_max_turn;
     std::vector<Player> m_player_list;
     std::vector<Player> m_possib_winner;
     DiceBag m_dice_bag;
     Player m_current_player;
+    std::string initializer_name;
+    size_type initializer_amount;
 
 
     enum m_possible_states : uint8_t{
@@ -42,14 +49,6 @@ class GameController{
 };
 
     //METHODS:
-    
-
-    GameController(){
-    uint8_t m_current_state = START;
-    size_type m_brains_to_win = 13;
-    size_type m_max_players = 3;
-    size_type m_max_turn = 0;
-}
     public:
 
     void parse_config();
@@ -162,5 +161,11 @@ class GameController{
         return gc;
     } 
 
+    //GET METHODS:
+    std::string get_initializer(){ return initializer_name; }
+    size_type get_initializer_amount(){ return initializer_amount; };
 
+    //SET METHODS:
+    void set_initializer(std::string ini){ initializer_name =  ini;}
+    void set_initializer_amount(size_type amount){ initializer_amount = amount; }
 };  
