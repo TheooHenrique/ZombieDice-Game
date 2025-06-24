@@ -12,8 +12,5 @@ size_type Player::getFootprints() const { return m_run_round; }
 size_type Player::get_total_brains() const { return m_total_brains; }
 size_type Player::get_turns_played() const { return m_turns_played; }
 size_type Player::get_turn() const { return m_turn; }
-void Player::addBrain() { m_brain_round++; }
-void Player::addShotgun() { m_shots_round++; }
-void Player::addFootprint() { m_run_round++; }
 void Player::incrementTurns() {m_turns_played++;} 
 std::string Player::decision() { return action;}
