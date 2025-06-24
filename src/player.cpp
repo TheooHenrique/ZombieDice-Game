@@ -14,8 +14,4 @@ size_type Player::get_total_brains() const { return m_total_brains; }
 void Player::addBrain() { m_brain_round++; }
 void Player::addShotgun() { m_shots_round++; }
 void Player::addFootprint() { m_run_round++; }
-bool Player::decision() {
-    // Lógica temporária: por enquanto, o jogador sempre decide continuar.
-    // TODO: Implementar a lógica real de decisão do jogador.
-    return true;
-}
+bool Player::decision() { return action;}

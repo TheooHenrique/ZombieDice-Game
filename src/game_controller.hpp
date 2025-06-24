@@ -1,14 +1,19 @@
 #include <cstdint>
+#include <filesystem>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include "dicebag.hpp"
 #include "player.hpp"
 #include "reader.hpp"
+#include <unordered_map>
 #include <algorithm>
 #include <random>
 #include <limits>
+
+
 
 class GameController{
     using size_type = std::size_t;
@@ -20,6 +25,7 @@ class GameController{
         m_max_turn(0),
         m_current_player(),
         initializer_amount(0),
+        config_ok(true),
         m_game_initialized(false) {}
 
     //ATTRIBUTES:
@@ -38,8 +44,16 @@ class GameController{
     std::string initializer_name;
     size_type initializer_amount;
     std::string error_msg;
+    bool config_ok;
     bool m_game_initialized;
+    bool multiple_initializer;
+    bool green_faces_are_ok;
+    bool yellow_faces_are_ok;
+    bool red_faces_are_ok;
+    bool gamesectiontypeerror;
+    
 
+    //std::unordered_map<typename Key, typename Tp>
 
     enum m_possible_states : uint8_t{
     START,              ///start the game
@@ -61,109 +75,173 @@ class GameController{
 };
 
     //METHODS:
-    public:
+public:
+void parse_config(int argc, char* argv[]){
+    size_type ct = 0;
+    for (size_type i{1}; i < argc ; ++i){ 
+    std::string extension = std::filesystem::path(argv[i]).extension().string();
+    if (extension == ".ini"){
+        initializer_name = argv[i];
+        ++ct;
+    }
+  }
+  initializer_amount = ct;
+  
+  if(initializer_amount == 1){
+    //Call Reader's constructor
+    Reader reader(initializer_name);
+    //Override gc attributes with initializer config
+    
+    //GAME CONSTRUCTOR INPUT WITH INITIALIZER CONFIG AND ERROR TREATMENTS
+    if (reader.getSection("Game").find("brains_to_win") != reader.getSection("Game").end()){
+        if (!reader.getSection("Game").at("brains_to_win").empty()){
+             try{ m_brains_to_win = std::stoi(reader.getSection("Game").at("brains_to_win"));}
+             catch (const std::invalid_argument& e){ throw std::invalid_argument("Type error! Put just integers in your Game section of configuration file!"); } }}
+    if (reader.getSection("Game").find("max_turns") != reader.getSection("Game").end()){
+        if (!reader.getSection("Game").at("max_turns").empty()){
+            try{m_max_turn = std::stoi(reader.getSection("Game").at("max_turns"));}
+            catch (const std::invalid_argument& e) { throw std::invalid_argument("Type error! Put just integers in your Game section of configuration file!"); } }} 
+    if (reader.getSection("Game").find("max_players") != reader.getSection("Game").end()){
+        if (!reader.getSection("Game").at("max_players").empty()){
+            try{m_max_players = std::stoi(reader.getSection("Game").at("max_players"));}
+            catch(const std::invalid_argument& e) { throw std::invalid_argument("Type error! Put just integers in your Game section of configuration file!"); } }}
+    if (reader.getSection("Game").find("weak_dice") != reader.getSection("Game").end()){
+        if (!reader.getSection("Game").at("weak_dice").empty()){
+            try{m_weak_dice = std::stoi(reader.getSection("Game").at("weak_dice"));}
+            catch(const std::invalid_argument& e) { throw std::invalid_argument("Type error! Put just integers in your Game section of configuration file!"); } }}
+    if (reader.getSection("Game").find("strong_dice") != reader.getSection("Game").end()){
+        if (!reader.getSection("Game").at("strong_dice").empty()){
+            try{m_strong_dice = std::stoi(reader.getSection("Game").at("strong_dice"));}
+            catch(const std::invalid_argument& e) { throw std::invalid_argument("Type error! Put just integers in your Game section of configuration file!"); } }}
+    if (reader.getSection("Game").find("tough_dice") != reader.getSection("Game").end()){
+        if (!reader.getSection("Game").at("tough_dice").empty()){
+            try{m_tough_dice = std::stoi(reader.getSection("Game").at("tough_dice"));}
+            catch(const std::invalid_argument& e) { throw std::invalid_argument("Type error! Put just integers in your Game section of configuration file!"); } }}
 
-    void parse_config();
+    //ZDICE CONSTRUCT INPUT WITH INITIALIZER CONFIG
+    std::string weak = reader.getSection("Dice").at("weak_dice_faces");
+    std::string strong = reader.getSection("Dice").at("strong_dice_faces");
+    std::string tough = reader.getSection("Dice").at("tough_dice_faces");
+
+    if (reader.getSection("Dice").find("weak_dice_faces") != reader.getSection("Dice").end()){
+        if (!reader.getSection("Dice").at("weak_dice_faces").empty()){
+            for (size_type i{0}; i < m_dice_bag.get_available_dice().size() ; ++i){
+                if(m_dice_bag.get_available_dice()[i].get_green()){
+                    m_dice_bag.get_available_dice()[i].set_faces(reader.getSection("Dice").at("weak_dice_faces"));}}
+                }}
+    if (reader.getSection("Dice").find("strong_dice_faces") != reader.getSection("Dice").end()){
+        if (!reader.getSection("Dice").at("strong_dice_faces").empty()){
+            for (size_type i{0}; i < m_dice_bag.get_available_dice().size() ; ++i){
+                if(m_dice_bag.get_available_dice()[i].get_yellow()){
+                    m_dice_bag.get_available_dice()[i].set_faces(reader.getSection("Dice").at("strong_dice_faces"));}}}}
+        if (reader.getSection("Dice").find("tough_dice_faces") != reader.getSection("Dice").end()){
+        if (!reader.getSection("Dice").at("tough_dice_faces").empty()){
+            for (size_type i{0}; i < m_dice_bag.get_available_dice().size() ; ++i){
+                if(m_dice_bag.get_available_dice()[i].get_red()){
+                    m_dice_bag.get_available_dice()[i].set_faces(reader.getSection("Dice").at("tough_dice_faces"));}}}}
+    //DICE SECTION ERROR TREATMENT
+    green_faces_are_ok = true;
+    yellow_faces_are_ok = true;
+    red_faces_are_ok = true;
+    for (size_type i{0}; i < reader.getSection("Dice").at("weak_dice_faces").length() ; ++i){
+        if (weak[i] != 'f' && weak[i] != 's' && weak[i] != 'b'){
+            config_ok = false;
+            error_msg = "There is a problem on your initializer file! Verify if the values of the Dice section is ok!\n";
+            green_faces_are_ok = false;
+            break;}}
+    for (size_type i{0}; i < reader.getSection("Dice").at("strong_dice_faces").length() ; ++i){
+        if (weak[i] != 'f' && strong[i] != 's' && weak[i] != 'b'){
+            config_ok = false;
+            error_msg = "There is a problem on your initializer file! Verify if the values of the Dice section is ok!\n";
+            green_faces_are_ok = false;
+            break;}}
+    for (size_type i{0}; i < reader.getSection("Dice").at("tough_dice_faces").length() ; ++i){
+        if (weak[i] != 'f' && tough[i] != 's' && weak[i] != 'b'){
+            config_ok = false;
+            error_msg = "There is a problem on your initializer file! Verify if the values of the Dice section is ok!\n";
+            green_faces_are_ok = false;
+            break;}}
+
+    //RECALLING M_DICE_BAG OBJECT WITH INITIALIZER CONFIG
+    m_dice_bag = *new DiceBag(m_weak_dice, m_strong_dice, m_tough_dice, weak, strong, tough);
+
+    if (green_faces_are_ok && yellow_faces_are_ok && red_faces_are_ok && !gamesectiontypeerror){ config_ok = true; }
+} 
+  else if (initializer_amount > 1){
+    multiple_initializer = true;
+    error_msg = "This program cannot support two initializer files! Please choose just one!\n";
+    config_ok = false;}
+}
     void process_events(){
-        if (m_current_state == START){
-
-        }
-        else if (m_current_state == WELCOME){
-            if(initializer_amount == 1){
-                //Call Reader's constructor
-                Reader reader(initializer_name);
-                //Override gc attributes with initializer config
-
-                //Tá faltando verificar "Game.at("brains_to_win")" exite.
-                if (!reader.getSection("Game").at("brains_to_win").empty()){
-                    m_brains_to_win = std::stoi(reader.getSection("Game").at("brains_to_win")); }
-                if (!reader.getSection("Game").at("max_turns").empty()){
-                    m_max_turn = std::stoi(reader.getSection("Game").at("max_turns")); }
-                if (!reader.getSection("Game").at("max_player").empty()){
-                    m_max_players = std::stoi(reader.getSection("Game").at("max_players")); }
-                if (!reader.getSection("Game").at("weak_dice").empty()){
-                    m_weak_dice = std::stoi(reader.getSection("Game").at("weak_dice")); }
-                if (!reader.getSection("Game").at("tough_dice").empty()){
-                    m_tough_dice = std::stoi(reader.getSection("Game").at("tough_dice")); }
-                if (!reader.getSection("Game").at("strong_dice").empty()){
-                    m_strong_dice = std::stoi(reader.getSection("Game").at("strong_dice")); }
-
-                if (!reader.getSection("Dice").at("weak_dice_faces").empty()){
-                    for (size_type i{0}; i < m_dice_bag.get_available_dice().size() ; ++i)
-                    m_dice_bag.get_available_dice()[i].set_faces(reader.getSection("Game").at("weak_dice"));}
-                if (!reader.getSection("Dice").at("tough_dice_faces").empty()){
-                    for (size_type i{0}; i < m_dice_bag.get_available_dice().size() ; ++i)
-                    m_dice_bag.get_available_dice()[i].set_faces(reader.getSection("Game").at("tough_dice")); }
-                if (!reader.getSection("Dice").at("strong_dice_faces").empty()){
-                    for (size_type i{0}; i < m_dice_bag.get_available_dice().size() ; ++i)
-                    m_dice_bag.get_available_dice()[i].set_faces(reader.getSection("Game").at("strong_dice"));}
-
-            } 
-            //Colocar isso no render depois:
-            else if (initializer_amount > 1){ error_msg = "Não é possível iniciar o programa com dois arquivos inicializadores! Digite somente um!"; }
-
-        }
-        else if (m_current_state == INVALID_CFG){
-            //Colocar isso no render depois:
-            error_msg = "Erro! Alguma configuração que você inseriu no arquivo \"zdice.ini\" está errada! \n Se atente a ler as instruções de maneira correta.\n";
-        }
-        else if (m_current_state == INPUT_PLAYERS){
+        if (m_current_state == INPUT_PLAYERS){
             std::string players_string;
             std::getline(std::cin, players_string);
+            players_string.erase(0, players_string.find_first_not_of(" \t\n\r"));
+            players_string.erase(players_string.find_last_not_of(" \t\n\r") + 1);
 
-            if (players_string.empty()) {
+            if (players_string.empty()){
                 m_current_state = END;
                 return;
             }
-
+            else if ( players_string == ",") {
+                error_msg = "Insert your players!"; //NÃO É PRA RECEBER END, É PRA DAR MSG DE ERRO
+            }
+            else {
             std::stringstream ss(players_string);
             std::string player_name;
 
             m_player_list.clear();
 
-            while (std::getline(ss, players_string, ',')) {
+            while (std::getline(ss, player_name, ',')) {
                 //remove spaces
                 player_name.erase(0, player_name.find_first_not_of(" \t\n\r"));
                 player_name.erase(player_name.find_last_not_of(" \t\n\r") + 1);
-
                 if (!player_name.empty()) {
-                    m_player_list.emplace_back(player_name); //emplace_back does not receive an object, but rather the arguments to the constructor of the object you want to create. It then forwards these arguments to the constructor of the container's object type and constructs the object directly in memory already allocated at the end of the container.
-                }
+                    m_player_list.emplace_back(player_name);
+                } 
             }
+            //Shuffle the player_list array
+            std::random_device rd;
+            std::mt19937 g(rd());
+            std::shuffle(m_player_list.begin(), m_player_list.end(), g);
+            m_current_player = m_player_list[0];
+
+            if (m_player_list.size() > m_max_players || m_player_list.size() < 2){
+                error_msg = "Invalid player amount!";
+            }
+        }
+    }
+        else if (m_current_state == WAITING_ACTION){
+            std::string act;
+            std::getline(std::cin, act);
+            
+            if (act.empty()){m_current_player.set_decision(true);} //Decidiu roll
+            else if (act == "H"){ m_current_player.set_decision(false);} //Decided Hold turn
+            else if (act == "Q"){ m_current_state = END; } //Decided quit game
     }
 };
 
-
-    void update(){ //O que tiver de comentário aqui, a maioria são para funções que DEVEM SER ADICIONADAS NO "PROCESS_EVENTS". "Update" é só para receber os gatilhos e
-        // a partir deles, trocar para o estado desejado.
+    void update(){
         if (m_current_state == START){
-            m_current_state = WELCOME;
-        }
-        else if (m_current_state == WELCOME){
-            if(config_ok()) { m_current_state = INPUT_PLAYERS;} //Caso as configs estejam ok
-            else {m_current_state = INVALID_CFG;} //Caso tenha erro nas configs
-        }
-        else if (m_current_state == INVALID_CFG){
-            //FUNÇÃO PARA MOSTRAR ERRO DE CONFIG INVALIDA
-            m_current_state = START;
+            if(config_ok){m_current_state = INPUT_PLAYERS;}
+            else{ m_current_state = INVALID_CFG; }
         }
         else if (m_current_state == INPUT_PLAYERS){
             if (m_player_list.size() >= 2 && m_player_list.size() <= m_max_players){ //Caso a quantidade de players esteja ok
-                std::random_device rd;
-                std::mt19937 g(rd());
-                std::shuffle(m_player_list.begin(), m_player_list.end(), g);
-
-                m_current_player = m_player_list[0];
-
-                m_current_state = WAITING_ACTION;
+                m_current_state = WELCOME;
             }
-            if (m_player_list.size() > m_max_players){ //Caso a lista de player seja inválida
+            else if (m_player_list.size() > m_max_players || m_player_list.size() < 2){ //Caso a lista de player seja inválida
                 m_current_state = INVALID_PLAYERS;
             }
         }
         else if (m_current_state == INVALID_PLAYERS){
-            //FUNÇÃO PARA MOSTRAR ERRO DE PLAYERS INVALIDOS
             m_current_state = INPUT_PLAYERS;
+        }
+        else if (m_current_state == WELCOME){
+            m_current_state = WAITING_ACTION;
+        }
+        else if (m_current_state == INVALID_CFG){
+            m_current_state = END;
         }
         else if (m_current_state == WAITING_ACTION){
             m_current_state = m_current_player.decision() ? DICE_ROLL : SKIP;
@@ -230,39 +308,46 @@ class GameController{
                 std::cout << "  ate in that turn; then the turn goes to the next player.\n";
                 std::cout << "  However, if you decide to stop before get shot 3 times, you keep\n";
                 std::cout << "  the brains you ate.\n\n";
+
+                if (!m_game_initialized) { //if the game haven't started
+                    std::cout << "\n  >>> The players of the game are:\n";
+                    for (const auto& player : m_player_list) {
+                        std::cout << "\"" << player.getName() << "\"\n";
+                    }
+                    std::cout << "\n  >>> The player who will start the game is \"" << m_current_player.getName() << "\"\n";
+                    std::cout << "  Press <Enter> to start the match.";
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o buffer e espera o Enter
+                    start_game();
+                }
+                break;
+            }
+            case INPUT_PLAYERS: {
                 std::cout << "  Before we begin, please enter the names of the players\n";
                 std::cout << "  in a single line, separated by comma. For example:\n";
                 std::cout << "  >>> Jack , Menace, Ultraz, Boris\n\n";
                 std::cout << "  Minimum of 2 player, maximum of " << m_max_players << " names.\n";
                 std::cout << "  Providing an empty line will end the game.\n";
-                break;
-            }
-            case INPUT_PLAYERS: {
-                std::cout << " >>> ";
+                std::cout << ">>> ";
                 break;
             }
             case WAITING_ACTION: {
-                if (!m_game_initialized) { //if the game haven't started
-                    std::cout << "\n  >>> The players of the game are:\n";
-                    for (const auto& player : m_player_list) {
-                        std::cout << "  \"" << player.getName() << "\"\n";
-                    }
-
-                    std::cout << "\n  >>> The player who will start the game is \"" << m_current_player.getName() << "\"\n";
-                    std::cout << "  Press <Enter> to start the match.";
-                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o buffer e espera o Enter
-
-                    m_game_initialized = true;
+                std::cout << "ENTREI EM WAITING_ACTION";
+                if (m_game_initialized){
+                    //TODO resto
                 }
-                //TODO resto
                 break;
             }
             case INVALID_PLAYERS: {
                 std::cout << error_msg;
+                break;
+            }
+            case INVALID_CFG: {
+                std::cout << error_msg;
+                break;
             }
         }
     };
-    void start_game();
+    void start_game() { m_game_initialized = true;}
     bool check_tie() {
         // Lógica temporária: nunca há empate.
         // TODO: Implementar a verificação de empate.
@@ -275,11 +360,7 @@ class GameController{
     void next_player();
     void untie();
     bool has_tie();
-    bool config_ok() {
-        // Lógica temporária: sempre retorna true por enquanto.
-        // TODO: Implementar a validação real do arquivo de configuração.
-        return true;
-    };
+    
 
     static GameController& getInstance(){ //Call the unique object of the class
         static GameController gc;
@@ -289,6 +370,7 @@ class GameController{
     //GET METHODS:
     std::string get_initializer(){ return initializer_name; }
     size_type get_initializer_amount(){ return initializer_amount; };
+    bool get_config_ok() { return config_ok; }
 
     //SET METHODS:
     void set_initializer(std::string ini){ initializer_name =  ini;}

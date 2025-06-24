@@ -26,12 +26,14 @@ public:
     size_type get_total_brains() const;
 
   //SET METHODS
-  void set_name(std::string str){ name = str; };
+  void set_name(std::string str){ name = str; }
+  void set_decision(bool act) { action = act; }
   
 private:
   //ATTRIBUTES
     std::string name;
     bool m_is_playing;
+    bool action;
     size_type m_brain_round;
     size_type m_run_round;
     size_type m_shots_round;
