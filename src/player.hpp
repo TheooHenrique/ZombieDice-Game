@@ -16,7 +16,11 @@ public:
     void addShotgun();
     void addFootprint();
     size_type note();
-    bool decision();
+    std::string decision();
+    bool operator==( const Player &other ) const {
+      if (this->action == other.action && this->m_is_playing == other.m_is_playing && this->m_brain_round == other.m_brain_round && this->m_run_round == other.m_run_round && this->m_shots_round == other.m_shots_round && this->name == other.name){return true;}
+      return false;
+    };
 
   //GET METHODS
     const std::string& getName() const;
@@ -27,13 +31,13 @@ public:
 
   //SET METHODS
   void set_name(std::string str){ name = str; }
-  void set_decision(bool act) { action = act; }
+  void set_decision(std::string act) { action = act; }
   
 private:
   //ATTRIBUTES
     std::string name;
     bool m_is_playing;
-    bool action;
+    std::string action;
     size_type m_brain_round;
     size_type m_run_round;
     size_type m_shots_round;

@@ -184,7 +184,7 @@ void parse_config(int argc, char* argv[]){
                 return;
             }
             else if ( players_string == ",") {
-                error_msg = "Insert your players!"; //NÃO É PRA RECEBER END, É PRA DAR MSG DE ERRO
+                error_msg = "Insert your players!\n"; //NÃO É PRA RECEBER END, É PRA DAR MSG DE ERRO
             }
             else {
             std::stringstream ss(players_string);
@@ -207,7 +207,7 @@ void parse_config(int argc, char* argv[]){
             m_current_player = m_player_list[0];
 
             if (m_player_list.size() > m_max_players || m_player_list.size() < 2){
-                error_msg = "Invalid player amount!";
+                error_msg = "Invalid player amount!\n";
             }
         }
     }
@@ -215,9 +215,22 @@ void parse_config(int argc, char* argv[]){
             std::string act;
             std::getline(std::cin, act);
             
-            if (act.empty()){m_current_player.set_decision(true);} //Decidiu roll
-            else if (act == "H"){ m_current_player.set_decision(false);} //Decided Hold turn
-            else if (act == "Q"){ m_current_state = END; } //Decided quit game
+            if (act.empty()){m_current_player.set_decision("roll");} //Decidiu roll
+            else if (act == "H"){ m_current_player.set_decision("skip");} //Decided Hold turn
+            else if (act == "Q"){ 
+                
+                for (size_type i{0}; i < m_player_list.size() ; ++i ){
+                    if (m_player_list[i] == m_current_player){
+                        m_player_list.erase(m_player_list.begin() + i);
+                    }
+                }
+            
+                m_current_player.set_decision("quit");
+            } 
+            else{ m_current_player.set_decision("invalid");}
+    }
+        else if(m_current_state == SKIP){
+
     }
 };
 
@@ -244,11 +257,19 @@ void parse_config(int argc, char* argv[]){
             m_current_state = END;
         }
         else if (m_current_state == WAITING_ACTION){
-            m_current_state = m_current_player.decision() ? DICE_ROLL : SKIP;
-            if (m_current_player.decision() != true || m_current_player.decision() != false){ m_current_state = INVALID_ACTION;}
+            if (m_current_player.decision() == "roll"){ m_current_state = DICE_ROLL; }
+            else if (m_current_player.decision() == "skip"){ m_current_state = SKIP; }
+            else if (m_current_player.decision() == "quit") {
+                if (m_player_list.size() == 1){
+                    m_possib_winner.push_back(m_player_list[0]);
+                    m_current_state = POSSIB_WIN; //QUANDO TIVER A MENSAGEM DO VENCEDOR RENDERIZADA TEM Q MANDAR DIZER Q ELE VENCEU E MOSTRAR O SCORE
+                }
+                else {m_current_state = SKIP;}
+            }
+            else if(m_current_player.decision() == "invalid"){ m_current_state = INVALID_ACTION; }
+            
         }
         else if (m_current_state == INVALID_ACTION){
-            //FUNÇÃO PARA MOSTRAR ERRO DE AÇÃO INVÁLIDA
             m_current_state = WAITING_ACTION;
         }
         else if (m_current_state == SKIP){
