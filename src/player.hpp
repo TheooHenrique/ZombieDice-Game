@@ -12,9 +12,6 @@ public:
   
     
   //METHODS
-    void addBrain();
-    void addShotgun();
-    void addFootprint();
     void incrementTurns();
     size_type note();
     std::string decision();
@@ -36,6 +33,11 @@ public:
   void set_name(std::string str){ name = str; }
   void set_decision(std::string act) { action = act; }
   void set_turn(size_type turn){ turn = turn; }
+  void set_brain(size_type i){ m_brain_round = i; }
+  void set_footprint(size_type i) { m_run_round = i; }
+  void set_shotgun(size_type i) {m_shots_round = i;}
+  void set_total_brains(size_type i) {m_total_brains = i; }
+  void set_turns_played(size_type i) { m_turns_played = i; }
   
 private:
   //ATTRIBUTES

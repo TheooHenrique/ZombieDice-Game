@@ -1,5 +1,6 @@
 #include "dicebag.hpp"
 #include <algorithm>
+#include <iostream>
 #include <random>
 #include "zdice.hpp"
 using size_type = size_t;
@@ -34,7 +35,9 @@ DiceBag::DiceBag(size_type green_amount, size_type yellow_amount, size_type red_
 }
 
 std::string DiceBag::sort_dices(size_t num_dice) {
-    if (available_dice.size() < get_dices_amount()) { refill_bag(); }
+    if (available_dice.size() < get_dices_amount()) { 
+        std::cout << "QUASE ENTREI EM REFILL_BAG";
+        refill_bag(); }
     std::random_device rd;
     gen = std::mt19937(rd());
     std::shuffle(available_dice.begin(), available_dice.end(), gen);
@@ -53,6 +56,7 @@ std::string DiceBag::sort_dices(size_t num_dice) {
 
 void DiceBag::refill_bag() {
     ///Restore the DiceBag with all dices that result in brain.
+    std::cout << "ENTREI EM REFILL_BAG!!!!\n\n\n";
     for (size_type i{0}; i < used_dice.size(); ++i){
         if(used_dice[i].get_result() == "b"){
             available_dice.push_back(used_dice[i]);
