@@ -170,7 +170,7 @@ void parse_config(int argc, char* argv[]){
 } 
   else if (initializer_amount > 1){
     multiple_initializer = true;
-    error_msg = "This program cannot support two initializer files! Please choose just one!\n";
+    error_msg = "This program cannot support more than one initializer files! Please choose just one!\n";
     config_ok = false;}
 }
     void process_events(){
@@ -218,6 +218,7 @@ void parse_config(int argc, char* argv[]){
             
             if (act.empty()){m_current_player->set_decision("roll");} //Decidiu roll
             else if (act == "H"){ m_current_player->set_decision("skip");} //Decided Hold turn
+
             else if (act == "Q"){ 
                 
                 for (size_type i{0}; i < m_player_list.size() ; ++i ){
@@ -388,7 +389,7 @@ void parse_config(int argc, char* argv[]){
                             std::cout << "   ";
                         }
                         std::cout << std::left << std::setw(10) << (player.getName() + ":")
-                                  << "(" << std::setw(2) << player.get_total_brains() << "), "
+                                  << "(" << player.get_total_brains() << "), "
                                   << "# turns played: " << player.get_turns_played() << "\n";
                     }
 
@@ -396,8 +397,8 @@ void parse_config(int argc, char* argv[]){
                     std::cout << " | Turn #: " << m_current_round;
                     std::cout << " | Bag has: " << m_dice_bag.get_dices_amount() << " 🎲.\n\n";
                     
-                    std::cout << "┌───────────────────┐\n";
-                    std::cout << "│   Rolling Table   │\n";
+                    std::cout << "┌─────────────────┐\n";
+                    std::cout << "│   Rolling Table │\n";
                     std::cout << "├─────┬─────┬─────┤\n";
                     std::cout << "│     │     │     │\n"; // Espaços para os dados
                     std::cout << "└─────┴─────┴─────┘\n\n";
@@ -423,8 +424,15 @@ void parse_config(int argc, char* argv[]){
                 std::cout << error_msg;
                 break;
             }
-            case SKIP: {
-                break;
+
+            case PLAYER_WIN: {
+                std::cout << "┌─[ Message area ]───────────────────┐\n";
+                std::cout << "│ Game Over!                         │\n";
+                std::cout << "│                                    │\n";
+                std::cout << "|                                    |\n";
+                std::cout << "└────────────────────────────────────┘\n\n";
+
+                std::cout << ">>> THE WINNER IS \"" << m_possib_winner[0].getName() << "\"";
             }
         }
     };
