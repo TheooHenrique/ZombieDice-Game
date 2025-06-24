@@ -2,16 +2,17 @@
 
 using size_type = size_t;
 
-Player::Player() : name(""), m_brain_round(0), m_run_round(0), m_shots_round(0), m_total_brains(0), m_is_playing(false) {}
-
-Player::Player(const std::string& name) : name(name), m_brain_round(0), m_run_round(0), m_shots_round(0) {}
+Player::Player() : name(""), m_brain_round(0), m_run_round(0), m_shots_round(0), m_total_brains(0), m_is_playing(false), m_turns_played(0) {}
+Player::Player(const std::string& name) : name(name), m_brain_round(0), m_run_round(0), m_shots_round(0), m_total_brains(0), m_is_playing(true), m_turns_played(0) {}
 
 const std::string& Player::getName() const { return name; }
 size_type Player::getBrains() const { return m_brain_round; }
 size_type Player::getShotguns() const { return m_shots_round; }
 size_type Player::getFootprints() const { return m_run_round; }
 size_type Player::get_total_brains() const { return m_total_brains; }
+size_type Player::get_turns_played() const { return m_turns_played; }
 void Player::addBrain() { m_brain_round++; }
 void Player::addShotgun() { m_shots_round++; }
 void Player::addFootprint() { m_run_round++; }
+void Player::incrementTurns() {m_turns_played++;}
 bool Player::decision() { return action;}
