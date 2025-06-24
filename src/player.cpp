@@ -14,4 +14,4 @@ size_type Player::get_total_brains() const { return m_total_brains; }
 void Player::addBrain() { m_brain_round++; }
 void Player::addShotgun() { m_shots_round++; }
 void Player::addFootprint() { m_run_round++; }
-bool Player::decision() { return action;}
+std::string Player::decision() { return action;}
