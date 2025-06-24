@@ -185,7 +185,7 @@ void parse_config(int argc, char* argv[]){
                 m_current_state = END;
                 return;
             }
-            else if ( players_string == ",") {
+            else if (players_string == ",") {
                 error_msg = "Insert your players!\n"; //NÃO É PRA RECEBER END, É PRA DAR MSG DE ERRO
             }
             else {
@@ -247,24 +247,47 @@ void parse_config(int argc, char* argv[]){
             m_current_player->set_shotgun(0);
             }
         else if(m_current_state == DICE_ROLL){
-            
-            std::string str = m_dice_bag.sort_dices();
-            for (int i{0}; i < 3 ; ++i){
-                std::string res;
-                if (str[i] == 'g'){ res = m_dice_bag.get_available_dice()[i].roll();
-                    m_dice_bag.get_available_dice()[i].set_result("g");
-                }
-                else if (str[i] == 'y'){ res = m_dice_bag.get_available_dice()[i].roll();
-                    m_dice_bag.get_available_dice()[i].set_result("y");
-                }
-                else if (str[i] == 'r'){ res = m_dice_bag.get_available_dice()[i].roll();
-                    m_dice_bag.get_available_dice()[i].set_result("r");
-                }
-                if (res == "b"){ m_current_player->set_brain(m_current_player->getBrains() + 1); }
-                else if (res == "f"){ m_current_player->set_footprint(m_current_player->getFootprints() + 1); }
-                else if (res == "s"){ m_current_player->set_shotgun(m_current_player->getShotguns() + 1); }
-                std::cout << res << std::endl;
+            std::vector<ZDice> sorted_dice {m_dice_bag.sort_dices(3)};
+
+            for (ZDice& die : sorted_dice){
+                std::string res = die.roll();
+
+                std::string face_emoji;
+                if (res == "s") face_emoji = "💥";
+                else if (res == "f") face_emoji = "👣";
+                else if (res == "b") face_emoji = "🧠";
+
+                std::string color_emoji;
+                if (die.get_green()) color_emoji = "🟩";
+                else if (die.get_yellow()) color_emoji = "🟨";
+                else if (die.get_red()) color_emoji = "🟥";
+                
+                std::cout << "Face: " << face_emoji<< " (Cor: " << color_emoji << ")" << std::endl;
+
+                /*std::string res;
+                if (str[i] == 'g'){ res = m_dice_bag.get_available_dice()[i].roll(); }
+                else if (str[i] == 'y'){ res = m_dice_bag.get_available_dice()[i].roll();}
+                else if (str[i] == 'r'){ res = m_dice_bag.get_available_dice()[i].roll();}*/
+                if (res == "b"){ m_current_player->addBrain(); }
+                else if (res == "f"){ m_current_player->addFootprint(); }
+                else if (res == "s"){ m_current_player->addShotgun(); }
             }
+
+            std::cout << "--- DEBUG: Dados restantes no saco ---" << std::endl;
+                int count = 0;
+                for (const auto& die : m_dice_bag.get_available_dice()) {
+                    std::cout << "Dado #" << ++count << ": ";
+                    if (die.get_green()) {
+                        std::cout << "Verde 🟩" << std::endl;
+                    } else if (die.get_yellow()) {
+                        std::cout << "Amarelo 🟨" << std::endl;
+                    } else if (die.get_red()) {
+                        std::cout << "Vermelho 🟥" << std::endl;
+                    } else {
+                        std::cout << "Cor indefinida" << std::endl;
+                    }
+                }
+                std::cout << "--- FIM DO DEBUG ---" << std::endl;
         }
         else if(m_current_state == CHECK_DICES){
             if (m_current_player->getFootprints() >= 3){

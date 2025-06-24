@@ -47,7 +47,6 @@ void remove_quotes(std::string& s) {
  * @param filename The path to the configuration file.
  */
 Reader::Reader(const std::string& filename) {
-
     std::ifstream file(filename);
     std::string line, section;
 
