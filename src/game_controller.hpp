@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <random>
 #include <limits>
+#include <iomanip>
 
 
 
@@ -352,9 +353,44 @@ void parse_config(int argc, char* argv[]){
                 break;
             }
             case WAITING_ACTION: {
-                std::cout << "ENTREI EM WAITING_ACTION";
+                //std::cout << "ENTREI EM WAITING_ACTION";
                 if (m_game_initialized){
-                    //TODO resto
+                    std::cout << "  -->[🧟] Zombie Dice Delux, v 0.1 [🧟]<--\n\n";
+                    std::cout << " ┌─────────────────────────────────────────┐\n";
+                    std::cout << " │               Global Score              │\n";
+                    std::cout << " └─────────────────────────────────────────┘\n";
+
+                    for (const auto& player : m_player_list) {
+                        if (player.getName() == m_current_player.getName()) {
+                            std::cout << " > ";
+                        } else {
+                            std::cout << "   ";
+                        }
+                        std::cout << std::left << std::setw(10) << (player.getName() + ":")
+                                  << "(" << std::setw(2) << player.get_total_brains() << "), "
+                                  << "# turns played: " << player.get_turns_played() << "\n";
+                    }
+
+                    std::cout << "Player: \"" << m_current_player.getName() << "\"";
+                    std::cout << " | Turn #: " << m_current_round;
+                    std::cout << " | Bag has: " << m_dice_bag.get_dices_amount() << " 🎲.\n\n";
+                    
+                    std::cout << "┌───────────────────┐\n";
+                    std::cout << "│   Rolling Table   │\n";
+                    std::cout << "├─────┬─────┬─────┤\n";
+                    std::cout << "│     │     │     │\n"; // Espaços para os dados
+                    std::cout << "└─────┴─────┴─────┘\n\n";
+
+                    std::cout << "🧠 Brains: (" << m_current_player.getBrains() << ")\n";
+                    std::cout << "💥 Shots:  (" << m_current_player.getShotguns() << ")\n\n";
+
+                    std::cout << "┌─[ Message area ]───────────────────┐\n";
+                    std::cout << "│ Ready to play?                     │\n";
+                    std::cout << "│ <enter>     - roll dices           │\n";
+                    std::cout << "│ H + <enter> - hold turn            │\n";
+                    std::cout << "│ Q + <enter> - quit game            │\n";
+                    std::cout << "└────────────────────────────────────┘\n";
+                    std::cout << "🧟> ";
                 }
                 break;
             }

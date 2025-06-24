@@ -7,7 +7,7 @@ class Player {
   using size_type = size_t;
 public:
   //Constructor:
-  Player(); //DEPOIS TEM QUE FAZER O GAMECONTROLLER RECEBER OS PLAYERS QUE O USUARIO COLOCAR NA LISTA, NÃO ESSE CONSTRUTOR PADRÃO (ta aqui so por gambiarra)
+  Player();
   Player(const std::string& name);
   
     
@@ -15,6 +15,7 @@ public:
     void addBrain();
     void addShotgun();
     void addFootprint();
+    void incrementTurns();
     size_type note();
     std::string decision();
     bool operator==( const Player &other ) const {
@@ -28,6 +29,7 @@ public:
     size_type getShotguns() const;
     size_type getFootprints() const;
     size_type get_total_brains() const;
+    size_type get_turns_played() const;
 
   //SET METHODS
   void set_name(std::string str){ name = str; }
@@ -35,14 +37,14 @@ public:
   
 private:
   //ATTRIBUTES
-    std::string name;
-    bool m_is_playing;
+    std::string name; 
+    bool m_is_playing; ///check if the player is still playing the game
     std::string action;
-    size_type m_brain_round;
-    size_type m_run_round;
-    size_type m_shots_round;
-    size_type m_total_brains;
-
+    size_type m_brain_round;  ///total brains in the round
+    size_type m_run_round;    ///total runs in the round
+    size_type m_shots_round;  ///total shots in the round
+    size_type m_total_brains; ///total brains the player got
+    size_type m_turns_played; ///total turns the player played
 };
 
 #endif
