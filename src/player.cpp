@@ -14,5 +14,5 @@ size_type Player::get_turns_played() const { return m_turns_played; }
 void Player::addBrain() { m_brain_round++; }
 void Player::addShotgun() { m_shots_round++; }
 void Player::addFootprint() { m_run_round++; }
-void Player::incrementTurns() {m_turns_played++;}           
-bool Player::decision() { return action;}
+void Player::incrementTurns() {m_turns_played++;} 
+std::string Player::decision() { return action;}
