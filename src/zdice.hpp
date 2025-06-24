@@ -14,7 +14,7 @@ class ZDice{
 
     ///GET METHODS
     const std::string get_faces(){ return faces; }
-    const std::string get_result(){ return roll_result; }
+    const std::string get_result() const { return roll_result; }
     const bool get_green(){ return m_green; }
     const bool get_yellow(){ return m_yellow; }
     const bool get_red(){ return m_red; }

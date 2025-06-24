@@ -36,8 +36,10 @@ DiceBag::DiceBag(size_type green_amount, size_type yellow_amount, size_type red_
 
 std::string DiceBag::sort_dices(size_t num_dice) {
     if (available_dice.size() < get_dices_amount()) { 
-        std::cout << "QUASE ENTREI EM REFILL_BAG";
         refill_bag(); }
+            if (available_dice.size() < num_dice) {
+            throw std::runtime_error("Not enough dice available even after refill");
+        }
     std::random_device rd;
     gen = std::mt19937(rd());
     std::shuffle(available_dice.begin(), available_dice.end(), gen);
@@ -55,13 +57,22 @@ std::string DiceBag::sort_dices(size_t num_dice) {
 }
 
 void DiceBag::refill_bag() {
-    ///Restore the DiceBag with all dices that result in brain.
-    std::cout << "ENTREI EM REFILL_BAG!!!!\n\n\n";
-    for (size_type i{0}; i < used_dice.size(); ++i){
-        if(used_dice[i].get_result() == "b"){
-            available_dice.push_back(used_dice[i]);
-        }
-    }
+// Move todos os dados com resultado "brain" de volta para available_dice
+    auto it = std::remove_if(used_dice.begin(), used_dice.end(), 
+        [this](const ZDice& dice) {
+            if (dice.get_result() == "b") {
+                available_dice.push_back(dice);
+                return true;
+            }
+            return false;
+        });
+    
+    used_dice.erase(it, used_dice.end());
+    
+    // Embaralha os dados disponíveis
+    std::random_device rd;
+    gen = std::mt19937(rd());
+    std::shuffle(available_dice.begin(), available_dice.end(), gen);
 }
 
 bool DiceBag::lower_than_3_dices() { return available_dice.size() < 3;}
