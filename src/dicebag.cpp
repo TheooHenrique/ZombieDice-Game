@@ -6,7 +6,6 @@ using size_type = size_t;
 
 //Default constructor
   DiceBag::DiceBag() : m_green_amount(6), m_yellow_amount(4), m_red_amount(3), m_total_dices(13){ 
-
     ZDice green_dice(true, false, false, "bbbffs");
     ZDice yellow_dice(false, true, false, "bbffss");
     ZDice red_dice(false, false, true, "bffsss");
@@ -33,8 +32,23 @@ DiceBag::DiceBag(size_type green_amount, size_type yellow_amount, size_type red_
     for (int i = 0; i < red_amount; ++i) available_dice.push_back(red_dice);
 }
 
-std::string DiceBag::sort_dices(size_t num_dice) {
-    if (available_dice.size() < get_dices_amount()) { refill_bag(); }
+std::vector<ZDice> DiceBag::sort_dices(size_t num_dice) {
+    std::vector<ZDice> sorted_dice;
+    std::random_device rd;
+    gen = std::mt19937(rd());
+    std::shuffle(available_dice.begin(), available_dice.end(), gen);
+
+    size_type number_dice_to_get = std::min(num_dice, available_dice.size());
+
+    for (size_t i = 0; i < number_dice_to_get; ++i) {
+        sorted_dice.push_back(available_dice.front());
+        used_dice.push_back(available_dice.front());
+        available_dice.erase(available_dice.begin());
+    }
+
+    return sorted_dice;
+
+    /*if (available_dice.size() < get_dices_amount()) { refill_bag(); }
     std::random_device rd;
     gen = std::mt19937(rd());
     std::shuffle(available_dice.begin(), available_dice.end(), gen);
@@ -48,7 +62,7 @@ std::string DiceBag::sort_dices(size_t num_dice) {
         available_dice.erase(available_dice.begin() + i);
         
     }
-    return result;
+    return result;*/
 }
 
 void DiceBag::refill_bag() {

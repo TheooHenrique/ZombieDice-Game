@@ -5,8 +5,6 @@
 using size_type = size_t;
 
 ZDice::ZDice(bool green, bool yellow, bool red, std::string all_faces) { 
-    ///initializes the member variable faces (the one on the left) with the value of the parameter faces (the one on the right).
-    // When you create a ZDice object dice("ABC");, the internal variable dice.faces receives the value "ABC".
     m_green = green;
     m_yellow = yellow;
     m_red = red;

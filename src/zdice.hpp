@@ -13,11 +13,11 @@ class ZDice{
     std::string roll();
 
     ///GET METHODS
-    const std::string get_faces(){ return faces; }
-    const std::string get_result(){ return roll_result; }
-    const bool get_green(){ return m_green; }
-    const bool get_yellow(){ return m_yellow; }
-    const bool get_red(){ return m_red; }
+    const std::string get_faces() const { return faces; }
+    const std::string get_result() const { return roll_result; }
+    const bool get_green() const { return m_green; }
+    const bool get_yellow() const { return m_yellow; }
+    const bool get_red() const { return m_red; }
 
     ///SET METHODS:
     void set_faces(std::string f){ faces = f; }
