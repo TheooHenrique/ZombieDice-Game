@@ -19,7 +19,6 @@ size_type i = 0;
 std::string ZDice::roll() {
     std::shuffle(faces.begin(), faces.end(), gen);
     roll_result = faces[i]; //Converte o char i em string
-    ++i;
     
     return roll_result;
 }
