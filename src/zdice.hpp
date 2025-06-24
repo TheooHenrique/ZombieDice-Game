@@ -19,8 +19,10 @@ class ZDice{
     const bool get_yellow() const { return m_yellow; }
     const bool get_red() const { return m_red; }
 
+
     ///SET METHODS:
     void set_faces(std::string f){ faces = f; }
+    void set_result(std::string s) { roll_result = s;}
 
     private:
     //ATTRIBUTES

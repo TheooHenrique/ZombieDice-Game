@@ -1,5 +1,6 @@
 #include "dicebag.hpp"
 #include <algorithm>
+#include <iostream>
 #include <random>
 #include "zdice.hpp"
 using size_type = size_t;
@@ -48,30 +49,26 @@ std::vector<ZDice> DiceBag::sort_dices(size_t num_dice) {
 
     return sorted_dice;
 
-    /*if (available_dice.size() < get_dices_amount()) { refill_bag(); }
-    std::random_device rd;
-    gen = std::mt19937(rd());
-    std::shuffle(available_dice.begin(), available_dice.end(), gen);
 
-    std::string result;
-    for (size_t i{0}; i < num_dice ; ++i) {
-        if (available_dice[i].get_green()){ result += "g"; }
-        else if (available_dice[i].get_yellow()){ result += "y"; }
-        else if (available_dice[i].get_red()){ result += "r"; }
-        used_dice.push_back(available_dice.front());
-        available_dice.erase(available_dice.begin() + i);
-        
-    }
-    return result;*/
 }
 
 void DiceBag::refill_bag() {
-    ///Restore the DiceBag with all dices that result in brain.
-    for (size_type i{0}; i < used_dice.size(); ++i){
-        if(used_dice[i].get_result() == "b"){
-            available_dice.push_back(used_dice[i]);
-        }
-    }
+// Move todos os dados com resultado "brain" de volta para available_dice
+    auto it = std::remove_if(used_dice.begin(), used_dice.end(), 
+        [this](const ZDice& dice) {
+            if (dice.get_result() == "b") {
+                available_dice.push_back(dice);
+                return true;
+            }
+            return false;
+        });
+    
+    used_dice.erase(it, used_dice.end());
+    
+    // Embaralha os dados disponíveis
+    std::random_device rd;
+    gen = std::mt19937(rd());
+    std::shuffle(available_dice.begin(), available_dice.end(), gen);
 }
 
 bool DiceBag::lower_than_3_dices() { return available_dice.size() < 3;}
