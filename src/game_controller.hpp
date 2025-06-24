@@ -259,10 +259,6 @@ void parse_config(int argc, char* argv[]){
                 
                 std::cout << "Face: " << face_emoji<< " (Cor: " << color_emoji << ")" << std::endl;
 
-                /*std::string res;
-                if (str[i] == 'g'){ res = m_dice_bag.get_available_dice()[i].roll(); }
-                else if (str[i] == 'y'){ res = m_dice_bag.get_available_dice()[i].roll();}
-                else if (str[i] == 'r'){ res = m_dice_bag.get_available_dice()[i].roll();}*/
                 if (res == "b"){ m_current_player->addBrain(); }
                 else if (res == "f"){ m_current_player->addFootprint(); }
                 else if (res == "s"){ m_current_player->addShotgun(); }

@@ -3,7 +3,7 @@
  * @brief Implementation of the Reader class for parsing .ini files.
  * @author Haniel Lucas Machado Rocha
  * @author Theo Henrique da Silva Borges
- * @date 2025-06-24
+ * @date June 24th, 2025
  */
 
 #include "reader.hpp"

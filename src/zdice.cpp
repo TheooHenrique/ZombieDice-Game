@@ -13,6 +13,11 @@ ZDice::ZDice(bool green, bool yellow, bool red, std::string all_faces) {
     gen = std::mt19937(rd());
 }
 
+/**
+ * @brief Simulates rolling the die.
+ * This implementation shuffles the 'faces' string and picks the first character
+ * as the random result.
+ */
 size_type i = 0;
 std::string ZDice::roll() {
     std::shuffle(faces.begin(), faces.end(), gen);
