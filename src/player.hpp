@@ -30,10 +30,12 @@ public:
     size_type getFootprints() const;
     size_type get_total_brains() const;
     size_type get_turns_played() const;
+    size_type get_turn()const;
 
   //SET METHODS
   void set_name(std::string str){ name = str; }
   void set_decision(std::string act) { action = act; }
+  void set_turn(size_type turn){ turn = turn; }
   
 private:
   //ATTRIBUTES
@@ -45,6 +47,7 @@ private:
     size_type m_shots_round;  ///total shots in the round
     size_type m_total_brains; ///total brains the player got
     size_type m_turns_played; ///total turns the player played
+    size_type m_turn;         ///The order the players are going to play
 };
 
 #endif

@@ -41,7 +41,7 @@ class GameController{
     std::vector<Player> m_player_list;
     std::vector<Player> m_possib_winner;
     DiceBag m_dice_bag;
-    Player m_current_player;
+    Player* m_current_player;
     std::string initializer_name;
     size_type initializer_amount;
     std::string error_msg;
@@ -205,7 +205,7 @@ void parse_config(int argc, char* argv[]){
             std::random_device rd;
             std::mt19937 g(rd());
             std::shuffle(m_player_list.begin(), m_player_list.end(), g);
-            m_current_player = m_player_list[0];
+            m_current_player = &m_player_list[0];
 
             if (m_player_list.size() > m_max_players || m_player_list.size() < 2){
                 error_msg = "Invalid player amount!\n";
@@ -216,23 +216,44 @@ void parse_config(int argc, char* argv[]){
             std::string act;
             std::getline(std::cin, act);
             
-            if (act.empty()){m_current_player.set_decision("roll");} //Decidiu roll
-            else if (act == "H"){ m_current_player.set_decision("skip");} //Decided Hold turn
+            if (act.empty()){m_current_player->set_decision("roll");} //Decidiu roll
+            else if (act == "H"){ m_current_player->set_decision("skip");} //Decided Hold turn
             else if (act == "Q"){ 
                 
                 for (size_type i{0}; i < m_player_list.size() ; ++i ){
-                    if (m_player_list[i] == m_current_player){
+                    if (m_player_list[i] == *m_current_player){
                         m_player_list.erase(m_player_list.begin() + i);
+                        m_current_player = &m_player_list[i];
                     }
                 }
-            
-                m_current_player.set_decision("quit");
+                m_current_player->set_decision("quit");
             } 
-            else{ m_current_player.set_decision("invalid");}
+            else{ m_current_player->set_decision("invalid");}
     }
         else if(m_current_state == SKIP){
-
-    }
+            for (size_type i{0}; i < m_player_list.size() ; ++i ){
+                if (m_player_list[i] == *m_current_player){
+                    if (i + 1 < m_player_list.size()){
+                        m_current_player = &m_player_list[i+1];
+                        break;
+                    } else{ m_current_player = &m_player_list[0]; break;}
+                }
+            }
+            }
+        else if(m_current_state == DICE_ROLL){
+            
+            std::string str = m_dice_bag.sort_dices();
+            for (int i{0}; i < 3 ; ++i){
+                std::string res;
+                if (str[i] == 'g'){ res = m_dice_bag.get_available_dice()[i].roll(); }
+                else if (str[i] == 'y'){ res = m_dice_bag.get_available_dice()[i].roll();}
+                else if (str[i] == 'r'){ res = m_dice_bag.get_available_dice()[i].roll();}
+                if (res == "b"){ m_current_player->addBrain(); }
+                else if (res == "f"){ m_current_player->addFootprint(); }
+                else if (res == "s"){ m_current_player->addShotgun(); }
+                std::cout << res << std::endl;
+            }
+        }
 };
 
     void update(){
@@ -258,16 +279,16 @@ void parse_config(int argc, char* argv[]){
             m_current_state = END;
         }
         else if (m_current_state == WAITING_ACTION){
-            if (m_current_player.decision() == "roll"){ m_current_state = DICE_ROLL; }
-            else if (m_current_player.decision() == "skip"){ m_current_state = SKIP; }
-            else if (m_current_player.decision() == "quit") {
+            if (m_current_player->decision() == "roll"){ m_current_state = DICE_ROLL; }
+            else if (m_current_player->decision() == "skip"){ m_current_state = SKIP; }
+            else if (m_current_player->decision() == "quit") {
                 if (m_player_list.size() == 1){
                     m_possib_winner.push_back(m_player_list[0]);
                     m_current_state = POSSIB_WIN; //QUANDO TIVER A MENSAGEM DO VENCEDOR RENDERIZADA TEM Q MANDAR DIZER Q ELE VENCEU E MOSTRAR O SCORE
                 }
-                else {m_current_state = SKIP;}
+                else {m_current_state = WAITING_ACTION;}
             }
-            else if(m_current_player.decision() == "invalid"){ m_current_state = INVALID_ACTION; }
+            else if(m_current_player->decision() == "invalid"){ m_current_state = INVALID_ACTION; }
             
         }
         else if (m_current_state == INVALID_ACTION){
@@ -280,16 +301,17 @@ void parse_config(int argc, char* argv[]){
         else if (m_current_state == DICE_ROLL){
             //Função para o dado rodar
             m_current_state = CHECK_DICES;
+            m_current_state = END;
         }
         else if (m_current_state == CHECK_DICES){
             //Função para checar se tem 3 run ou 3 shotgun
             //Função para checar se o player chegou na quantidade maxima de cerebros
-            if (m_current_player.get_total_brains() >= m_brains_to_win){ 
+            if (m_current_player->get_total_brains() >= m_brains_to_win){ 
                 //Função que passa o player pra uma lista de possíveis vencedores
             }
             if (m_dice_bag.get_current_count() <= 3){ m_current_state = RESTORE_DICES;}
-            if (m_current_player.getFootprints() >= 3){ m_current_state = SKIP;}
-            else if (m_current_player.getShotguns() >= 3) {m_current_state = REMOVE_BRAINS;}
+            if (m_current_player->getFootprints() >= 3){ m_current_state = SKIP;}
+            else if (m_current_player->getShotguns() >= 3) {m_current_state = REMOVE_BRAINS;}
         }
         else if (m_current_state == RESTORE_DICES){
             //Função para dar restore nos dados.
@@ -336,7 +358,7 @@ void parse_config(int argc, char* argv[]){
                     for (const auto& player : m_player_list) {
                         std::cout << "\"" << player.getName() << "\"\n";
                     }
-                    std::cout << "\n  >>> The player who will start the game is \"" << m_current_player.getName() << "\"\n";
+                    std::cout << "\n  >>> The player who will start the game is \"" << m_current_player->getName() << "\"\n";
                     std::cout << "  Press <Enter> to start the match.";
                     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o buffer e espera o Enter
                     start_game();
@@ -353,7 +375,6 @@ void parse_config(int argc, char* argv[]){
                 break;
             }
             case WAITING_ACTION: {
-                //std::cout << "ENTREI EM WAITING_ACTION";
                 if (m_game_initialized){
                     std::cout << "  -->[🧟] Zombie Dice Delux, v 0.1 [🧟]<--\n\n";
                     std::cout << " ┌─────────────────────────────────────────┐\n";
@@ -361,7 +382,7 @@ void parse_config(int argc, char* argv[]){
                     std::cout << " └─────────────────────────────────────────┘\n";
 
                     for (const auto& player : m_player_list) {
-                        if (player.getName() == m_current_player.getName()) {
+                        if (player.getName() == m_current_player->getName()) {
                             std::cout << " > ";
                         } else {
                             std::cout << "   ";
@@ -371,7 +392,7 @@ void parse_config(int argc, char* argv[]){
                                   << "# turns played: " << player.get_turns_played() << "\n";
                     }
 
-                    std::cout << "Player: \"" << m_current_player.getName() << "\"";
+                    std::cout << "Player: \"" << m_current_player->getName() << "\"";
                     std::cout << " | Turn #: " << m_current_round;
                     std::cout << " | Bag has: " << m_dice_bag.get_dices_amount() << " 🎲.\n\n";
                     
@@ -381,8 +402,8 @@ void parse_config(int argc, char* argv[]){
                     std::cout << "│     │     │     │\n"; // Espaços para os dados
                     std::cout << "└─────┴─────┴─────┘\n\n";
 
-                    std::cout << "🧠 Brains: (" << m_current_player.getBrains() << ")\n";
-                    std::cout << "💥 Shots:  (" << m_current_player.getShotguns() << ")\n\n";
+                    std::cout << "🧠 Brains: (" << m_current_player->getBrains() << ")\n";
+                    std::cout << "💥 Shots:  (" << m_current_player->getShotguns() << ")\n\n";
 
                     std::cout << "┌─[ Message area ]───────────────────┐\n";
                     std::cout << "│ Ready to play?                     │\n";
@@ -400,6 +421,9 @@ void parse_config(int argc, char* argv[]){
             }
             case INVALID_CFG: {
                 std::cout << error_msg;
+                break;
+            }
+            case SKIP: {
                 break;
             }
         }

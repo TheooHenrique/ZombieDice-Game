@@ -16,7 +16,7 @@ public:
   DiceBag(size_type green_amount, size_type yellow_amount, size_type red_amount, std::string green_faces, std::string yellow_faces, std::string red_faces);
 
   //METHODS:
-  std::string sort_dices(int num_dice = 3);
+  std::string sort_dices(size_t num_dice = 3);
   bool lower_than_3_dices();
   void refill_bag();
 
@@ -25,7 +25,7 @@ public:
   const size_type& get_green_amount() const { return m_green_amount; }
   const size_type& get_yellow_amount() const { return m_yellow_amount; }
   const size_type& get_red_amount() const { return m_red_amount; }
-  const size_type& get_dices_amount() const { return m_total_dices; }
+  const size_type get_dices_amount() const { return available_dice.size(); }
   const size_type& get_current_count() const {return m_current_count_dices; }
   std::vector<ZDice>& get_available_dice() {return available_dice; }
   std::vector<ZDice>& get_used_dice() {return used_dice; }
