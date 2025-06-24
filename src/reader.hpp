@@ -8,7 +8,7 @@ class Reader {
 public:
     //Constructor:
     Reader(const std::string& filename);
-    std::map<std::string, std::string> getSection(const std::string& section);
+    const std::map<std::string, std::string>& getSection(const std::string& section) const;
 
 private:
     //Mapa que relaciona uma key à seu valor. EX: green_amount = 3, max_players = 4
