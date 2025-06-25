@@ -71,12 +71,14 @@ public:
      */
     const bool get_red() const { return m_red; }
 
+
     //== SETTERS (MUTATORS) ==//
     /**
      * @brief Sets or updates the faces of the die.
      * @param f The new string of faces.
      */
     void set_faces(std::string f){ faces = f; }
+    void set_result(std::string s) { roll_result = s;}
 
     private:
     //== ATTRIBUTES ==//
@@ -86,6 +88,7 @@ public:
     std::string faces;        /// A string containing all faces, e.g., "bbbffs".
     std::string roll_result;  /// Stores the result of the most recent roll.
     mutable std::mt19937 gen; /// The random number generator for this die. `mutable` allows it to be modified even in const methods.
+
 };
 
 #endif

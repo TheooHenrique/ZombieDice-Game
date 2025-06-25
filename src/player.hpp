@@ -37,6 +37,7 @@ public:
   Player(const std::string& name);
   
     
+
   //== GAMEPLAY METHODS ==//
     /**
      * @brief Increments the brain counter for the current round.
@@ -135,6 +136,11 @@ public:
      * @param turn The turn order number.
      */
   void set_turn(size_type turn){ turn = turn; }
+  void set_brain(size_type i){ m_brain_round = i; }
+  void set_footprint(size_type i) { m_run_round = i; }
+  void set_shotgun(size_type i) {m_shots_round = i;}
+  void set_total_brains(size_type i) {m_total_brains = i; }
+  void set_turns_played(size_type i) { m_turns_played = i; }
   
 private:
   //== ATTRIBUTES ==//

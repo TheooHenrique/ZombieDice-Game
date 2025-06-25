@@ -67,6 +67,7 @@ class GameController{
     SKIP,               ///skipping the player
     DICE_ROLL,          ///rolling the dice
     CHECK_DICES,        ///verify if a player has three run or shotgun
+    CHECK_BRAINS,
     REMOVE_BRAINS,      ///remove the brains if the user take three shots
     RESTORE_DICES,      ///print the current brain amount and put all the dices in the bag
     POSSIB_WIN,         ///put the player in the list that can win if this round end
@@ -185,7 +186,7 @@ void parse_config(int argc, char* argv[]){
                 return;
             }
             else if (players_string == ",") {
-                error_msg = "Insert your players!\n"; //NÃO É PRA RECEBER END, É PRA DAR MSG DE ERRO
+                error_msg = "Insert your players!\n"; 
             }
             else {
             std::stringstream ss(players_string);
@@ -232,6 +233,9 @@ void parse_config(int argc, char* argv[]){
             else{ m_current_player->set_decision("invalid");}
     }
         else if(m_current_state == SKIP){
+            m_current_player->set_turns_played(m_current_player->get_turns_played() + 1);
+            m_dice_bag.restore_bag();
+
             for (size_type i{0}; i < m_player_list.size() ; ++i ){
                 if (m_player_list[i] == *m_current_player){
                     if (i + 1 < m_player_list.size()){
@@ -240,6 +244,9 @@ void parse_config(int argc, char* argv[]){
                     } else{ m_current_player = &m_player_list[0]; break;}
                 }
             }
+            m_current_player->set_brain(0);
+            m_current_player->set_footprint(0);
+            m_current_player->set_shotgun(0);
             }
         else if(m_current_state == DICE_ROLL){
             std::vector<ZDice> sorted_dice {m_dice_bag.sort_dices(3)};
@@ -259,10 +266,18 @@ void parse_config(int argc, char* argv[]){
                 
                 std::cout << "Face: " << face_emoji<< " (Cor: " << color_emoji << ")" << std::endl;
 
-                if (res == "b"){ m_current_player->addBrain(); }
-                else if (res == "f"){ m_current_player->addFootprint(); }
-                else if (res == "s"){ m_current_player->addShotgun(); }
+
+                if (res == "b"){ m_current_player->set_brain(m_current_player->getBrains() + 1); }
+                else if (res == "f"){ m_current_player->set_footprint(m_current_player->getFootprints() + 1); }
+                else if (res == "s"){ m_current_player->set_shotgun(m_current_player->getShotguns() + 1); }
             }
+
+            m_dice_bag.add_to_used_dice(sorted_dice);
+
+            if (m_dice_bag.get_available_dice_count() < 3) {
+                std::cout << "Quantidade de dados na sacola é " << m_dice_bag.get_available_dice_count() << ". Chamando refill_bag." << std::endl;
+                m_dice_bag.refill_bag();
+    }
 
             std::cout << "--- DEBUG: Dados restantes no saco ---" << std::endl;
                 int count = 0;
@@ -278,11 +293,40 @@ void parse_config(int argc, char* argv[]){
                         std::cout << "Cor indefinida" << std::endl;
                     }
                 }
+std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
+                for (const auto& die : m_dice_bag.get_used_dice()) {
+                    std::cout << "Dado #" << ++count << ": ";
+                    if (die.get_green()) {
+                        std::cout << "Verde 🟩" << std::endl;
+                    } else if (die.get_yellow()) {
+                        std::cout << "Amarelo 🟨" << std::endl;
+                    } else if (die.get_red()) {
+                        std::cout << "Vermelho 🟥" << std::endl;
+                    } else {
+                        std::cout << "Cor indefinida" << std::endl;
+                    }
+                }
                 std::cout << "--- FIM DO DEBUG ---" << std::endl;
+        }
+        else if(m_current_state == CHECK_DICES){
+        }
+        else if (m_current_state == CHECK_BRAINS){
+            m_current_player->set_total_brains(m_current_player->get_total_brains() + m_current_player->getBrains());
+            if (m_current_player->get_total_brains() >= m_brains_to_win){
+                m_possib_winner.push_back(*m_current_player);
+            }
+        }
+        else if(m_current_state == POSSIB_WIN){
+
         }
 };
 
     void update(){
+        if (m_current_state == PLAYER_WIN || m_current_state == TIE){
+            //acaba
+            m_current_state = END;
+            return;
+        }
         if (m_current_state == START){
             if(config_ok){m_current_state = INPUT_PLAYERS;}
             else{ m_current_state = INVALID_CFG; }
@@ -303,41 +347,67 @@ void parse_config(int argc, char* argv[]){
         }
         else if (m_current_state == INVALID_CFG){
             m_current_state = END;
+            if (m_current_state == PLAYER_WIN || m_current_state == TIE){
+            //acaba
+            m_current_state = END;
+            return;
+        }
+        }
+        else if (m_current_state == RESTORE_DICES){
+            m_dice_bag.refill_bag();
+            m_current_state = DICE_ROLL;
         }
         else if (m_current_state == WAITING_ACTION){
-            if (m_current_player->decision() == "roll"){ m_current_state = DICE_ROLL; }
-            else if (m_current_player->decision() == "skip"){ m_current_state = SKIP; }
+            if (m_current_player->decision() == "roll"){
+                if (m_dice_bag.get_dices_amount() < 3) {
+                    m_current_state = RESTORE_DICES;
+                } else {
+                    m_current_state = DICE_ROLL; 
+                }
+            }
+            else if (m_current_player->decision() == "skip"){ m_current_state = CHECK_BRAINS; }
             else if (m_current_player->decision() == "quit") {
                 if (m_player_list.size() == 1){
                     m_possib_winner.push_back(m_player_list[0]);
-                    m_current_state = POSSIB_WIN; //QUANDO TIVER A MENSAGEM DO VENCEDOR RENDERIZADA TEM Q MANDAR DIZER Q ELE VENCEU E MOSTRAR O SCORE
+                    m_current_state = POSSIB_WIN; 
                 }
                 else {m_current_state = WAITING_ACTION;}
             }
             else if(m_current_player->decision() == "invalid"){ m_current_state = INVALID_ACTION; }
-            
         }
         else if (m_current_state == INVALID_ACTION){
             m_current_state = WAITING_ACTION;
         }
         else if (m_current_state == SKIP){
-            //Função para skippar para o próximo player
             m_current_state = WAITING_ACTION;
         }
         else if (m_current_state == DICE_ROLL){
-            //Função para o dado rodar
             m_current_state = CHECK_DICES;
-            m_current_state = END;
         }
         else if (m_current_state == CHECK_DICES){
-            //Função para checar se tem 3 run ou 3 shotgun
-            //Função para checar se o player chegou na quantidade maxima de cerebros
-            if (m_current_player->get_total_brains() >= m_brains_to_win){ 
-                //Função que passa o player pra uma lista de possíveis vencedores
+            if (m_current_player->getFootprints() >= 3){ m_current_state = CHECK_BRAINS;}
+            else if (m_current_player->getShotguns() >= 3){ m_current_state = SKIP; }
+            else{ m_current_state = WAITING_ACTION;}
+        }
+        else if (m_current_state == CHECK_BRAINS){
+            if (m_current_player->get_total_brains() >= m_brains_to_win){
+                m_current_state = POSSIB_WIN;
+            } else{m_current_state = SKIP;}
+        }
+
+        else if (m_current_state == POSSIB_WIN){
+            auto aux1 = true;
+            if (m_current_player->get_total_brains() >= m_brains_to_win){
+                for (size_type i{0}; i < m_player_list.size(); ++i){
+                    auto aux = m_player_list[0].get_turns_played();
+                    if (m_player_list[i].get_turns_played() != aux){
+                        aux1 = false;
+                    }
+                }
+                if (aux1 && m_possib_winner.size() == 1){m_current_state = PLAYER_WIN;}
+                else{ m_current_state = SKIP; }
             }
-            if (m_dice_bag.get_current_count() <= 3){ m_current_state = RESTORE_DICES;}
-            if (m_current_player->getFootprints() >= 3){ m_current_state = SKIP;}
-            else if (m_current_player->getShotguns() >= 3) {m_current_state = REMOVE_BRAINS;}
+            else {m_current_state = SKIP;}
         }
         else if (m_current_state == RESTORE_DICES){
             //Função para dar restore nos dados.
@@ -358,10 +428,7 @@ void parse_config(int argc, char* argv[]){
             //imprime mensagem dizendo que empatou entre X players
             m_current_state = TIE;
         }
-        else if (m_current_state == PLAYER_WIN || m_current_state == TIE){
-            //acaba
-            m_current_state = END;
-        }
+
     };
 
     void render() {

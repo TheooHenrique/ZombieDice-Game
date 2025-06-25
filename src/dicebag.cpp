@@ -1,5 +1,6 @@
 #include "dicebag.hpp"
 #include <algorithm>
+#include <iostream>
 #include <random>
 #include "zdice.hpp"
 using size_type = size_t;
@@ -32,30 +33,54 @@ DiceBag::DiceBag(size_type green_amount, size_type yellow_amount, size_type red_
     for (int i = 0; i < red_amount; ++i) available_dice.push_back(red_dice);
 }
 
+void DiceBag::add_to_used_dice(const std::vector<ZDice>& dice_to_add) {
+    for (const auto& die : dice_to_add) {
+        used_dice.push_back(die); 
+    }
+}
+
+
+
+
 std::vector<ZDice> DiceBag::sort_dices(size_t num_dice) {
-    std::vector<ZDice> sorted_dice;
     std::random_device rd;
     gen = std::mt19937(rd());
     std::shuffle(available_dice.begin(), available_dice.end(), gen);
-
-    size_type number_dice_to_get = std::min(num_dice, available_dice.size());
-
-    for (size_t i = 0; i < number_dice_to_get; ++i) {
-        sorted_dice.push_back(available_dice.front());
-        used_dice.push_back(available_dice.front());
-        available_dice.erase(available_dice.begin());
+    if (available_dice.size() < num_dice) {
+        num_dice = available_dice.size();
+        if (num_dice == 0) return {}; // if there are no dice, end this.
     }
+    std::vector<ZDice> drawn_dice; // This dices are going back do game-controller
+    for (size_t i = 0; i < num_dice; ++i) {
+        drawn_dice.push_back(available_dice.front()); 
+        available_dice.erase(available_dice.begin()); 
+    }
+    return drawn_dice; 
+}
 
-    return sorted_dice;
+void DiceBag::restore_bag(){
+    for (ZDice& dice : used_dice){
+        available_dice.push_back(dice);
+    }
+    used_dice.clear();
 }
 
 void DiceBag::refill_bag() {
-    ///Restore the DiceBag with all dices that result in brain.
-    for (size_type i{0}; i < used_dice.size(); ++i){
-        if(used_dice[i].get_result() == "b"){
-            available_dice.push_back(used_dice[i]);
+    std::vector<ZDice> remaining_used_dice;
+    for (ZDice& dice : used_dice) {
+        if (dice.get_result() == "b") {
+            available_dice.push_back(dice); // Move 'b' dices back to available_dices
+        } else {
+            remaining_used_dice.push_back(dice); // Keep those that are not 'b'
         }
     }
+    used_dice.clear();
+    used_dice = remaining_used_dice; // Move those are not 'b' at used_dice
+    // Shuffle the dices
+    std::random_device rd;
+    gen = std::mt19937(rd());
+    std::shuffle(available_dice.begin(), available_dice.end(), gen);
+    std::cout << "Sacola reabastecida! Dados disponíveis: " << available_dice.size() << std::endl;
 }
 
 bool DiceBag::lower_than_3_dices() { return available_dice.size() < 3;}

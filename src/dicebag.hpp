@@ -65,8 +65,14 @@ public:
      * Currently moves used dice that resulted in a 'brain' back to the available pile.
      */
   void refill_bag();
+  void restore_bag();
+  void add_to_used_dice(const std::vector<ZDice>& dice_to_add);
 
-
+  //GET METHODS
+  
+  
+    size_t get_available_dice_count() const { return available_dice.size(); }
+  
   //== GETTERS (ACCESSORS) ==//
   /**
    * @brief Gets the initial number of green dice.
@@ -109,6 +115,7 @@ public:
      * @return std::vector<ZDice>& A mutable reference to the used dice.
      */
   std::vector<ZDice>& get_used_dice() {return used_dice; }
+  
 
   //== SETTERS (MUTATORS) ==//
     /**
@@ -116,6 +123,7 @@ public:
      * @param value The ZDice object to add.
      */ 
   void set_available_dice(ZDice value){ available_dice.push_back(value); }
+  void set_used_dice(ZDice d){ used_dice.push_back(d); }
 
 private:
     //== ATTRIBUTES ==//
