@@ -186,7 +186,7 @@ void parse_config(int argc, char* argv[]){
                 return;
             }
             else if (players_string == ",") {
-                error_msg = "Insert your players!\n"; //NÃO É PRA RECEBER END, É PRA DAR MSG DE ERRO
+                error_msg = "Insert your players!\n"; 
             }
             else {
             std::stringstream ss(players_string);
@@ -234,6 +234,8 @@ void parse_config(int argc, char* argv[]){
     }
         else if(m_current_state == SKIP){
             m_current_player->set_turns_played(m_current_player->get_turns_played() + 1);
+            m_dice_bag.restore_bag();
+
             for (size_type i{0}; i < m_player_list.size() ; ++i ){
                 if (m_player_list[i] == *m_current_player){
                     if (i + 1 < m_player_list.size()){
@@ -264,18 +266,34 @@ void parse_config(int argc, char* argv[]){
                 
                 std::cout << "Face: " << face_emoji<< " (Cor: " << color_emoji << ")" << std::endl;
 
-                /*std::string res;
-                if (str[i] == 'g'){ res = m_dice_bag.get_available_dice()[i].roll(); }
-                else if (str[i] == 'y'){ res = m_dice_bag.get_available_dice()[i].roll();}
-                else if (str[i] == 'r'){ res = m_dice_bag.get_available_dice()[i].roll();}*/
-                if (res == "b"){ m_current_player->addBrain(); }
-                else if (res == "f"){ m_current_player->addFootprint(); }
-                else if (res == "s"){ m_current_player->addShotgun(); }
+                if (res == "b"){ m_current_player->set_brain(m_current_player->getBrains() + 1); }
+                else if (res == "f"){ m_current_player->set_footprint(m_current_player->getFootprints() + 1); }
+                else if (res == "s"){ m_current_player->set_shotgun(m_current_player->getShotguns() + 1); }
             }
+
+            m_dice_bag.add_to_used_dice(sorted_dice);
+
+            if (m_dice_bag.get_available_dice_count() < 3) {
+                std::cout << "Quantidade de dados na sacola é " << m_dice_bag.get_available_dice_count() << ". Chamando refill_bag." << std::endl;
+                m_dice_bag.refill_bag();
+    }
 
             std::cout << "--- DEBUG: Dados restantes no saco ---" << std::endl;
                 int count = 0;
                 for (const auto& die : m_dice_bag.get_available_dice()) {
+                    std::cout << "Dado #" << ++count << ": ";
+                    if (die.get_green()) {
+                        std::cout << "Verde 🟩" << std::endl;
+                    } else if (die.get_yellow()) {
+                        std::cout << "Amarelo 🟨" << std::endl;
+                    } else if (die.get_red()) {
+                        std::cout << "Vermelho 🟥" << std::endl;
+                    } else {
+                        std::cout << "Cor indefinida" << std::endl;
+                    }
+                }
+std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
+                for (const auto& die : m_dice_bag.get_used_dice()) {
                     std::cout << "Dado #" << ++count << ": ";
                     if (die.get_green()) {
                         std::cout << "Verde 🟩" << std::endl;

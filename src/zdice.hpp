@@ -27,7 +27,7 @@ class ZDice{
     private:
     //ATTRIBUTES
     bool m_green; 
-    bool m_yellow; //O que estiver como "true" indica o que o dado é. Esses bools definem os valores da string "faces" em zdice.cpp
+    bool m_yellow; 
     bool m_red;
     std::string faces;
     std::string roll_result;
