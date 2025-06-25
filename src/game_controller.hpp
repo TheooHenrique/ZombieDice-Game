@@ -14,13 +14,35 @@
 #include <limits>
 #include <iomanip>
 
+/**
+ * @file game_controller.hpp
+ * @brief Defines the main GameController class, which manages the entire game flow.
+ * @author YHaniel Lucas Machado Rocha
+ * @author Theo Henrique da Silva Borges
+ * @date June 24th, 2025
+ */
 
 
+/**
+ * @class GameController
+ * @brief The main engine of the Zombie Dice game, implemented as a Singleton.
+ *
+ * This class controls the game using a state machine. It is responsible for
+ * parsing configurations, managing players, handling the game loop (process,
+ * update, render), and determining the winner.
+ * @note This class follows the Singleton design pattern to ensure only one
+ * instance exists.
+ */
 class GameController{
+    /// @brief Alias for the size type used throughout the class.
     using size_type = std::size_t;
-    private:
 
-    //Default constructor
+private:
+    //== SINGLETON CONSTRUCTOR ==//
+    /**
+     * @brief Private default constructor to support the Singleton pattern.
+     * Initializes the game with default values.
+     */
     GameController() : m_current_state(START), m_brains_to_win(13), m_current_round(1),
         m_max_players(6),
         m_max_turn(0),
@@ -29,55 +51,62 @@ class GameController{
         config_ok(true),
         m_game_initialized(false) {}
 
-    //ATTRIBUTES:
-    uint8_t m_current_state;
-    size_type m_brains_to_win;
-    size_type m_current_round;
-    size_type m_max_players;
-    size_type m_max_turn;
-    size_type m_weak_dice;
-    size_type m_tough_dice;
-    size_type m_strong_dice;
-    std::vector<Player> m_player_list;
-    std::vector<Player> m_possib_winner;
-    DiceBag m_dice_bag;
-    Player* m_current_player;
-    std::string initializer_name;
-    size_type initializer_amount;
-    std::string error_msg;
-    bool config_ok;
-    bool m_game_initialized;
-    bool multiple_initializer;
-    bool green_faces_are_ok;
-    bool yellow_faces_are_ok;
-    bool red_faces_are_ok;
-    bool gamesectiontypeerror;
-    
+    //== ATTRIBUTES ==//
+    uint8_t m_current_state;              ///< The current state of the game's state machine.
+    size_type m_brains_to_win;            ///< The number of brains a player needs to score to trigger the end of the game.
+    size_type m_current_round;            ///< The current round number of the game.
+    size_type m_max_players;              ///< The maximum number of players allowed.
+    size_type m_max_turn;                 ///< The maximum number of turns for an alternative game mode. 0 means unlimited.
+    size_type m_weak_dice;                ///< The number of green dice, read from config.
+    size_type m_tough_dice;               ///< The number of yellow dice, read from config.
+    size_type m_strong_dice;              ///< The number of red dice, read from config.
+    std::vector<Player> m_player_list;    ///< The list of all players in the game.
+    std::vector<Player> m_possib_winner;  ///< A list of players who could potentially win.
+    std::vector<ZDice> sorted_dice;       ///< Stores the dice drawn in the current roll.
+    DiceBag m_dice_bag;                   ///< The dice bag object, containing all the game's dice.
+    Player *m_current_player;             ///< A pointer to the player whose turn it is.
+    std::string initializer_name;         ///< The name of the .ini configuration file.
+    size_type initializer_amount;         ///< The count of .ini files found.
+    std::string error_msg;                ///< A string to hold error messages for display.
+    bool config_ok;                       ///< Flag indicating if the configuration file was parsed successfully.
+    bool m_game_initialized;              ///< Flag indicating if the game has passed the welcome screen.
+    bool multiple_initializer;            ///< Flag for detecting multiple .ini files.
+    bool green_faces_are_ok;              ///< Flag for validating green dice faces from config.
+    bool yellow_faces_are_ok;             ///< Flag for validating yellow dice faces from config.
+    bool red_faces_are_ok;                ///< Flag for validating red dice faces from config.
+    bool gamesectiontypeerror;            ///< Flag for detecting type errors in the [Game] section of config.
 
-    //std::unordered_map<typename Key, typename Tp>
-
-    enum m_possible_states : uint8_t{
-    START,              ///start the game
-    WELCOME,            ///print the welcome msg
-    INVALID_CFG,        ///if the configuration file is invalid
-    INPUT_PLAYERS,      ///wait for the user input player list
-    INVALID_PLAYERS,    ///if the player list is invalid
-    WAITING_ACTION,     ///waiting for the player action
-    INVALID_ACTION,     ///if the inputed action is a non-valid action
-    SKIP,               ///skipping the player
-    DICE_ROLL,          ///rolling the dice
-    CHECK_DICES,        ///verify if a player has three run or shotgun
-    CHECK_BRAINS,
-    REMOVE_BRAINS,      ///remove the brains if the user take three shots
-    RESTORE_DICES,      ///print the current brain amount and put all the dices in the bag
-    POSSIB_WIN,         ///put the player in the list that can win if this round end
-    PLAYER_WIN,         ///one player won the game
-    TIE,                ///two or more players won the game (max turn reached)
-    END                 ///end the game
-};
+    /**
+     * @brief Defines all possible states for the game's state machine.
+     */
+    enum m_possible_states : uint8_t {
+        START,          ///< The initial state before the game begins.
+        WELCOME,        ///< The state for displaying the welcome message after players are entered.
+        INVALID_CFG,    ///< The state for handling an invalid configuration file.
+        INPUT_PLAYERS,  ///< The state for prompting the user to input player names.
+        INVALID_PLAYERS,///< The state for handling an invalid number of players.
+        WAITING_ACTION, ///< The main state, waiting for the current player's action (roll or hold).
+        INVALID_ACTION, ///< The state for handling invalid command input from the player.
+        SKIP,           ///< The state for processing the end of a turn and passing to the next player.
+        DICE_ROLL,      ///< The state where the dice are rolled and results are processed.
+        CHECK_DICES,    ///< The state for checking the results of a roll (e.g., if the player busted).
+        CHECK_BRAINS,   ///< The state for checking if a player has reached the win condition.
+        REMOVE_BRAINS,  ///< The state to process a player "busting" (losing round brains).
+        RESTORE_DICES,  ///< The state for refilling the dice bag when it runs low.
+        POSSIB_WIN,     ///< The state for identifying a potential winner.
+        PLAYER_WIN,     ///< The state when a definitive winner has been found.
+        TIE,            ///< The state when a tie is detected.
+        END             ///< The final state, which terminates the game loop.
+    };
 
     //METHODS:
 public:
+
+    /**
+     * @brief Parses command-line arguments to find and load a configuration .ini file.
+     * @param argc Argument count from main().
+     * @param argv Argument vector from main().
+     */
 void parse_config(int argc, char* argv[]){
     size_type ct = 0;
     for (size_type i{1}; i < argc ; ++i){ 
@@ -174,6 +203,10 @@ void parse_config(int argc, char* argv[]){
     error_msg = "This program cannot support more than one initializer files! Please choose just one!\n";
     config_ok = false;}
 }
+
+    /**
+     * @brief Processes user input and other game events based on the current state.
+     */
     void process_events(){
         if (m_current_state == INPUT_PLAYERS){
             std::string players_string;
@@ -217,7 +250,7 @@ void parse_config(int argc, char* argv[]){
             std::string act;
             std::getline(std::cin, act);
             
-            if (act.empty()){m_current_player->set_decision("roll");} //Decidiu roll
+            if (act.empty()){m_current_player->set_decision("roll");} //Decided roll
             else if (act == "H"){ m_current_player->set_decision("skip");} //Decided Hold turn
 
             else if (act == "Q"){ 
@@ -249,7 +282,7 @@ void parse_config(int argc, char* argv[]){
             m_current_player->set_shotgun(0);
             }
         else if(m_current_state == DICE_ROLL){
-            std::vector<ZDice> sorted_dice {m_dice_bag.sort_dices(3)};
+            sorted_dice = m_dice_bag.sort_dices(3);
 
             for (ZDice& die : sorted_dice){
                 std::string res = die.roll();
@@ -263,9 +296,6 @@ void parse_config(int argc, char* argv[]){
                 if (die.get_green()) color_emoji = "🟩";
                 else if (die.get_yellow()) color_emoji = "🟨";
                 else if (die.get_red()) color_emoji = "🟥";
-                
-                std::cout << "Face: " << face_emoji<< " (Cor: " << color_emoji << ")" << std::endl;
-
 
                 if (res == "b"){ m_current_player->set_brain(m_current_player->getBrains() + 1); }
                 else if (res == "f"){ m_current_player->set_footprint(m_current_player->getFootprints() + 1); }
@@ -278,35 +308,6 @@ void parse_config(int argc, char* argv[]){
                 std::cout << "Quantidade de dados na sacola é " << m_dice_bag.get_available_dice_count() << ". Chamando refill_bag." << std::endl;
                 m_dice_bag.refill_bag();
     }
-
-            std::cout << "--- DEBUG: Dados restantes no saco ---" << std::endl;
-                int count = 0;
-                for (const auto& die : m_dice_bag.get_available_dice()) {
-                    std::cout << "Dado #" << ++count << ": ";
-                    if (die.get_green()) {
-                        std::cout << "Verde 🟩" << std::endl;
-                    } else if (die.get_yellow()) {
-                        std::cout << "Amarelo 🟨" << std::endl;
-                    } else if (die.get_red()) {
-                        std::cout << "Vermelho 🟥" << std::endl;
-                    } else {
-                        std::cout << "Cor indefinida" << std::endl;
-                    }
-                }
-std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
-                for (const auto& die : m_dice_bag.get_used_dice()) {
-                    std::cout << "Dado #" << ++count << ": ";
-                    if (die.get_green()) {
-                        std::cout << "Verde 🟩" << std::endl;
-                    } else if (die.get_yellow()) {
-                        std::cout << "Amarelo 🟨" << std::endl;
-                    } else if (die.get_red()) {
-                        std::cout << "Vermelho 🟥" << std::endl;
-                    } else {
-                        std::cout << "Cor indefinida" << std::endl;
-                    }
-                }
-                std::cout << "--- FIM DO DEBUG ---" << std::endl;
         }
         else if(m_current_state == CHECK_DICES){
         }
@@ -321,9 +322,12 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
         }
 };
 
+    /**
+     * @brief The core of the state machine. Updates the game state based on the
+     * current state and recent events.
+     */
     void update(){
         if (m_current_state == PLAYER_WIN || m_current_state == TIE){
-            //acaba
             m_current_state = END;
             return;
         }
@@ -332,10 +336,10 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
             else{ m_current_state = INVALID_CFG; }
         }
         else if (m_current_state == INPUT_PLAYERS){
-            if (m_player_list.size() >= 2 && m_player_list.size() <= m_max_players){ //Caso a quantidade de players esteja ok
+            if (m_player_list.size() >= 2 && m_player_list.size() <= m_max_players){ 
                 m_current_state = WELCOME;
             }
-            else if (m_player_list.size() > m_max_players || m_player_list.size() < 2){ //Caso a lista de player seja inválida
+            else if (m_player_list.size() > m_max_players || m_player_list.size() < 2){ 
                 m_current_state = INVALID_PLAYERS;
             }
         }
@@ -348,7 +352,6 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
         else if (m_current_state == INVALID_CFG){
             m_current_state = END;
             if (m_current_state == PLAYER_WIN || m_current_state == TIE){
-            //acaba
             m_current_state = END;
             return;
         }
@@ -410,34 +413,36 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
             else {m_current_state = SKIP;}
         }
         else if (m_current_state == RESTORE_DICES){
-            //Função para dar restore nos dados.
+            
             m_current_state = DICE_ROLL;
         }
         else if (m_current_state == REMOVE_BRAINS){
-            //Função para remover cérebros
+            
             m_current_state = SKIP;
         }
         else if (m_possib_winner.size() == 1){
-            //Função que declara o unico jogador em possibwinner como winner
+            
             m_current_state = PLAYER_WIN;
         }
         else if (m_possib_winner.size() > 1){
-            //Função que tira todos os jogadores que não são possible winners da lista de jogadores.
+            
         }
         else if (check_tie()){
-            //imprime mensagem dizendo que empatou entre X players
             m_current_state = TIE;
         }
 
     };
 
+    /**
+     * @brief Renders the user interface to the console based on the current game state.
+     */
     void render() {
         switch (m_current_state) {
             case WELCOME: {
                 std::cout << "\n         ---> Welcome to the Zombi Dice game (v 0.1) <--\n";
                 std::cout << "                -- copyright DIMAp/UFRN 2024-2025 --\n\n";
                 std::cout << "  The object of the jeopardy dice game Zombie Dice is to be the\n";
-                std::cout << "  first to eat " << m_brains_to_win << " or more human brains in a turn.\n"; // Usa a variável de configuração
+                std::cout << "  first to eat " << m_brains_to_win << " or more human brains in a turn.\n";
                 std::cout << "  Each player's turn consists of repeatedly rolling 3 dice.\n";
                 std::cout << "  A dice may produce 3 outcomes: you ate a brain, the human escaped,\n";
                 std::cout << "  or you were shot!\n";
@@ -453,7 +458,7 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
                     }
                     std::cout << "\n  >>> The player who will start the game is \"" << m_current_player->getName() << "\"\n";
                     std::cout << "  Press <Enter> to start the match.";
-                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o buffer e espera o Enter
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                     start_game();
                 }
                 break;
@@ -492,7 +497,7 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
                     std::cout << "┌─────────────────┐\n";
                     std::cout << "│   Rolling Table │\n";
                     std::cout << "├─────┬─────┬─────┤\n";
-                    std::cout << "│     │     │     │\n"; // Espaços para os dados
+                    std::cout << "│     │     │     │\n";
                     std::cout << "└─────┴─────┴─────┘\n\n";
 
                     std::cout << "🧠 Brains: (" << m_current_player->getBrains() << ")\n";
@@ -517,6 +522,62 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
                 break;
             }
 
+            case CHECK_DICES: {
+                std::cout << "  -->[🧟] Zombie Dice Delux, v 0.1 [🧟]<--\n\n";
+                std::cout << " ┌─────────────────────────────────────────┐\n";
+                std::cout << " │               Global Score              │\n";
+                std::cout << " └─────────────────────────────────────────┘\n";
+
+                for (const auto& player : m_player_list) {
+                    if (player.getName() == m_current_player->getName()) {
+                        std::cout << " > ";
+                    } else {
+                        std::cout << "   ";
+                    }
+                    std::cout << std::left << std::setw(15) << (player.getName() + ":")
+                          << std::setw(3) << player.get_total_brains()
+                          << " brains, " << player.get_turns_played() << " turns\n";
+                }
+
+                std::cout << " ───────────────────────────────────────────\n";
+                std::cout << " Player: \"" << m_current_player->getName() << "\"";
+                std::cout << " | Turn #" << m_current_player->get_turns_played() + 1;
+                std::cout << " | Bag has: " << m_dice_bag.get_dices_amount() << " 🎲.\n\n";
+
+                std::cout << "┌─── Rolling Table ───┐\n";
+                std::cout << "│ ";
+                if (m_current_state == CHECK_DICES && !sorted_dice.empty()) {
+                    for (const auto& die : sorted_dice) {
+                        std::string face_emoji = (die.get_result() == "b") ? "🧠" : (die.get_result() == "s") ? "💥" : "👣";
+                        std::string color_emoji = (die.get_green()) ? "🟩" : (die.get_yellow()) ? "🟨" : "🟥";
+                        std::cout << face_emoji << "(" << color_emoji << ") ";
+                    }
+                } else {
+                 std::cout << "      🎲 🎲 🎲      ";
+                }
+                std::cout << "│\n";
+                std::cout << "└─────────────────────┘\n\n";
+
+                std::cout << "🧠 Brains this turn: (" << m_current_player->getBrains() << ")\n";
+                std::cout << "💥 Shots this turn:  (" << m_current_player->getShotguns() << ")\n\n";
+
+                std::cout << "┌─[ Message area ]─────────────────────────────────┐\n";
+                if (m_current_player->getShotguns() >= 3) {
+                    std::cout << "│ YOU DIED! 💀 You took 3 shots and lost your brains! │\n";
+                    std::cout << "│ Press <enter> to pass the turn.                  │\n";
+                } else if (m_current_state == CHECK_DICES) {
+                    std::cout << "│ You ate " << m_current_player->getBrains() << " brain(s) and took " << m_current_player->getShotguns() << " shot(s) so far.    │\n";
+                    std::cout << "│                                                  │\n";
+                } else {
+                    std::cout << "│ Your turn, " << m_current_player->getName() << "! Ready to roll?               │\n";
+                    std::cout << "│ <enter> - roll dices | H + <enter> - hold & score │\n";
+                }
+                std::cout << "└──────────────────────────────────────────────────┘\n";
+                
+                std::cout << "🧟> ";
+                break;
+            }
+
             case PLAYER_WIN: {
                 std::cout << "┌─[ Message area ]───────────────────┐\n";
                 std::cout << "│ Game Over!                         │\n";
@@ -528,35 +589,74 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
             }
         }
     };
+
+    //== UTILITY METHODS ==//
+    /**
+     * @brief Sets the flag to indicate the main game has started (post-welcome screen).
+     */
     void start_game() { m_game_initialized = true;}
+
     bool check_tie() {
-        // Lógica temporária: nunca há empate.
-        // TODO: Implementar a verificação de empate.
         return false;
     };
+
+    /**
+     * @brief Checks if the game has reached its final state.
+     * @return true If the current state is END, false otherwise.
+     */
     bool game_over() {
         return m_current_state == END;
-    };
-    void setup_players();
-    void next_player();
-    void untie();
-    bool has_tie();
-    
+    };    
 
-    static GameController& getInstance(){ //Call the unique object of the class
+     //== SINGLETON ACCESSOR ==//
+    /**
+     * @brief Provides access to the single instance of the GameController.
+     * @return GameController& A reference to the Singleton instance.
+     */
+    static GameController& getInstance(){
         static GameController gc;
         return gc;
     } 
 
-    //GET METHODS:
+    //== GETTERS AND SETTERS ==//
+    /**
+     * @brief Gets the name of the initializer file.
+     * @return std::string The name of the .ini file.
+     */
     std::string get_initializer(){ return initializer_name; }
+
+    /**
+     * @brief Gets the number of initializer files provided.
+     * @return size_type The count of .ini files.
+     */
     size_type get_initializer_amount(){ return initializer_amount; };
+
+    /**
+     * @brief Checks if the configuration is valid.
+     * @return true If the config is ok, false otherwise.
+     */
     bool get_config_ok() { return config_ok; }
 
-    //SET METHODS:
+    /**
+     * @brief Sets the name of the initializer file.
+     * @param ini The name of the .ini file.
+     */
     void set_initializer(std::string ini){ initializer_name =  ini;}
+
+    /**
+     * @brief Sets the number of initializer files.
+     * @param amount The count of .ini files.
+     */
     void set_initializer_amount(size_type amount){ initializer_amount = amount; }
 
+    //== DELETED FUNCTIONS ==//
+    /**
+     * @brief Deleted copy constructor to prevent copying the Singleton.
+     */
     GameController(const GameController&) = delete;
+
+    /**
+     * @brief Deleted copy assignment operator to prevent copying the Singleton.
+     */
     GameController& operator=(const GameController&) = delete;
 };  
