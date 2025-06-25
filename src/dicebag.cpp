@@ -41,6 +41,7 @@ void DiceBag::add_to_used_dice(const std::vector<ZDice>& dice_to_add) {
 
 
 
+
 std::vector<ZDice> DiceBag::sort_dices(size_t num_dice) {
     std::random_device rd;
     gen = std::mt19937(rd());

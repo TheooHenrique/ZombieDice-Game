@@ -266,6 +266,7 @@ void parse_config(int argc, char* argv[]){
                 
                 std::cout << "Face: " << face_emoji<< " (Cor: " << color_emoji << ")" << std::endl;
 
+
                 if (res == "b"){ m_current_player->set_brain(m_current_player->getBrains() + 1); }
                 else if (res == "f"){ m_current_player->set_footprint(m_current_player->getFootprints() + 1); }
                 else if (res == "s"){ m_current_player->set_shotgun(m_current_player->getShotguns() + 1); }
