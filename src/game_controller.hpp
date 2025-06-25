@@ -308,11 +308,9 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
                 std::cout << "--- FIM DO DEBUG ---" << std::endl;
         }
         else if(m_current_state == CHECK_DICES){
-            if (m_current_player->getFootprints() >= 3){
-                m_current_player->set_total_brains(m_current_player->getBrains());
-            }
         }
         else if (m_current_state == CHECK_BRAINS){
+            m_current_player->set_total_brains(m_current_player->get_total_brains() + m_current_player->getBrains());
             if (m_current_player->get_total_brains() >= m_brains_to_win){
                 m_possib_winner.push_back(*m_current_player);
             }
@@ -323,6 +321,11 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
 };
 
     void update(){
+        if (m_current_state == PLAYER_WIN || m_current_state == TIE){
+            //acaba
+            m_current_state = END;
+            return;
+        }
         if (m_current_state == START){
             if(config_ok){m_current_state = INPUT_PLAYERS;}
             else{ m_current_state = INVALID_CFG; }
@@ -343,6 +346,11 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
         }
         else if (m_current_state == INVALID_CFG){
             m_current_state = END;
+            if (m_current_state == PLAYER_WIN || m_current_state == TIE){
+            //acaba
+            m_current_state = END;
+            return;
+        }
         }
         else if (m_current_state == RESTORE_DICES){
             m_dice_bag.refill_bag();
@@ -360,32 +368,33 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
             else if (m_current_player->decision() == "quit") {
                 if (m_player_list.size() == 1){
                     m_possib_winner.push_back(m_player_list[0]);
-                    m_current_state = POSSIB_WIN; //QUANDO TIVER A MENSAGEM DO VENCEDOR RENDERIZADA TEM Q MANDAR DIZER Q ELE VENCEU E MOSTRAR O SCORE
+                    m_current_state = POSSIB_WIN; 
                 }
                 else {m_current_state = WAITING_ACTION;}
             }
             else if(m_current_player->decision() == "invalid"){ m_current_state = INVALID_ACTION; }
-            
         }
         else if (m_current_state == INVALID_ACTION){
             m_current_state = WAITING_ACTION;
         }
         else if (m_current_state == SKIP){
-            //Função para skippar para o próximo player
             m_current_state = WAITING_ACTION;
         }
         else if (m_current_state == DICE_ROLL){
-            //Função para o dado rodar
             m_current_state = CHECK_DICES;
         }
         else if (m_current_state == CHECK_DICES){
-            //Função para checar se tem 3 run ou 3 shotgun
-            //Função para checar se o player chegou na quantidade maxima de cerebros
-
-            if (m_current_player->getFootprints() >= 3 || m_current_player->getShotguns() >= 3){ m_current_state = CHECK_BRAINS;}
+            if (m_current_player->getFootprints() >= 3){ m_current_state = CHECK_BRAINS;}
+            else if (m_current_player->getShotguns() >= 3){ m_current_state = SKIP; }
             else{ m_current_state = WAITING_ACTION;}
         }
         else if (m_current_state == CHECK_BRAINS){
+            if (m_current_player->get_total_brains() >= m_brains_to_win){
+                m_current_state = POSSIB_WIN;
+            } else{m_current_state = SKIP;}
+        }
+
+        else if (m_current_state == POSSIB_WIN){
             auto aux1 = true;
             if (m_current_player->get_total_brains() >= m_brains_to_win){
                 for (size_type i{0}; i < m_player_list.size(); ++i){
@@ -394,7 +403,8 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
                         aux1 = false;
                     }
                 }
-                if (aux1){ m_current_state = PLAYER_WIN; }
+                if (aux1 && m_possib_winner.size() == 1){m_current_state = PLAYER_WIN;}
+                else{ m_current_state = SKIP; }
             }
             else {m_current_state = SKIP;}
         }
@@ -417,10 +427,7 @@ std::cout << "--- DEBUG: Dados USADOS:  ---" << std::endl;
             //imprime mensagem dizendo que empatou entre X players
             m_current_state = TIE;
         }
-        else if (m_current_state == PLAYER_WIN || m_current_state == TIE){
-            //acaba
-            m_current_state = END;
-        }
+
     };
 
     void render() {
